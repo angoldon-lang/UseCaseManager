@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "use-case-archive-web-part": {
+      "components": [
+        {
+          "entrypoint": "./lib/webparts/useCaseArchive/UseCaseArchiveWebPart.js",
+          "manifest": "./src/webparts/useCaseArchive/UseCaseArchiveWebPart.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "UseCaseArchiveWebPartStrings": "lib/webparts/useCaseArchive/loc/{locale}.js"
+  }
+}

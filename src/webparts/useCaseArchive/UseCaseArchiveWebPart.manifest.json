@@ -1,0 +1,26 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx/client-side-web-part-manifest.schema.json",
+  "id": "3c2bfd58-5f8f-4e9b-975e-fb28556056a7",
+  "alias": "UseCaseArchiveWebPart",
+  "componentType": "WebPart",
+  "version": "*",
+  "manifestVersion": 2,
+  "requiresCustomScript": false,
+  "supportedHosts": ["SharePointWebPart", "SharePointFullPage", "TeamsPersonalApp", "TeamsTab"],
+  "supportsThemeVariants": true,
+  "preconfiguredEntries": [
+    {
+      "groupId": "5c03119e-3074-46fd-976b-c60198311f70",
+      "group": { "default": "Altro" },
+      "title": { "default": "Archivio Use Case" },
+      "description": { "default": "Archivio dei casi progettuali AD Consulting con schede PDF ed export Excel" },
+      "officeFabricIconFontName": "Library",
+      "properties": {
+        "siteTitle": "Archivio Use Case",
+        "listTitle": "Use Cases",
+        "assetsLibraryTitle": "Use Case Assets",
+        "sectors": "Manifatturiero, Servizi finanziari, Sanità, Pubblica Amministrazione, Retail e GDO, Energia e Utilities, Trasporti e Logistica, Telecomunicazioni, Education, Turismo e Hospitality, Servizi professionali, Altro"
+      }
+    }
+  ]
+}

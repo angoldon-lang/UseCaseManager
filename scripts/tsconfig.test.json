@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+    "target": "es2017",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "lib": ["es2017", "dom"],
+    "outDir": "../temp/test",
+    "rootDir": "../src",
+    "skipLibCheck": true,
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "types": []
+  },
+  "files": [
+    "../src/services/PdfService.ts",
+    "../src/services/ExcelService.ts",
+    "../src/utils/duplicates.ts",
+    "../src/utils/validation.ts"
+  ]
+}

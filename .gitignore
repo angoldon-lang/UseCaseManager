@@ -1,0 +1,21 @@
+logs
+*.log
+npm-debug.log*
+node_modules
+dist
+lib
+solution
+temp
+sharepoint/solution
+.heft
+coverage
+.DS_Store
+.vs
+bin
+obj
+*.resx.ts
+*.scss.ts
+# Il pacchetto distribuibile viene versionato esplicitamente in release/
+*.sppkg
+!deploy/*.sppkg
+release

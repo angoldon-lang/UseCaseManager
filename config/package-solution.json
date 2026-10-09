@@ -1,0 +1,36 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "AD Consulting - Archivio Use Case",
+    "id": "bedccf58-aaea-4e87-90d1-55ef1b993f9c",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true,
+    "skipFeatureDeployment": true,
+    "isDomainIsolated": false,
+    "developer": {
+      "name": "AD Consulting",
+      "websiteUrl": "",
+      "privacyUrl": "",
+      "termsOfUseUrl": "",
+      "mpnId": "Undefined-1.21.1"
+    },
+    "metadata": {
+      "shortDescription": { "default": "Archivio Use Case di AD Consulting" },
+      "longDescription": { "default": "Raccolta, consultazione, scheda PDF ed esportazione Excel dei casi progettuali di AD Consulting." },
+      "screenshotPaths": [],
+      "videoUrl": "",
+      "categories": []
+    },
+    "features": [
+      {
+        "title": "AD Consulting - Archivio Use Case",
+        "description": "Web part Archivio Use Case",
+        "id": "0ceabf02-3335-4ae3-9d4d-4445730effc3",
+        "version": "1.0.0.0"
+      }
+    ]
+  },
+  "paths": {
+    "zippedPackage": "solution/ad-usecase-archive.sppkg"
+  }
+}

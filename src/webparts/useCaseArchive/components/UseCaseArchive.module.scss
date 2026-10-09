@@ -1,0 +1,356 @@
+$brand: #0f4c81;
+$brandLight: #eef3f8;
+$border: #d0d7de;
+$text: #1f2a37;
+$muted: #5a6472;
+
+.app {
+  font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  color: $text;
+  position: relative;
+  min-width: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 0 16px;
+  border-bottom: 3px solid $brand;
+  margin-bottom: 16px;
+}
+
+.logo {
+  max-height: 48px;
+  max-width: 180px;
+  object-fit: contain;
+}
+
+.brandText {
+  font-size: 20px;
+  font-weight: 700;
+  color: $brand;
+}
+
+.title {
+  flex: 1 1 200px;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  color: $brand;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.notifications {
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 1000000;
+  width: min(420px, calc(100vw - 24px));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: minmax(220px, 2fr) repeat(5, minmax(130px, 1fr));
+  gap: 10px;
+  align-items: end;
+  background: $brandLight;
+  border: 1px solid $border;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+
+  @media (max-width: 1100px) {
+    grid-template-columns: repeat(3, minmax(130px, 1fr));
+  }
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.summary {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 4px 0 8px;
+  color: $muted;
+  font-size: 13px;
+}
+
+.tableWrap {
+  overflow-x: auto;
+  border: 1px solid $border;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  border: 1px solid $border;
+  border-left: 4px solid $brand;
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.cardTitle {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.cardMeta {
+  color: $muted;
+  font-size: 12px;
+  margin: 2px 0 6px;
+}
+
+.link {
+  color: $brand;
+  font-weight: 600;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  font-size: inherit;
+  font-family: inherit;
+
+  &:hover { text-decoration: underline; }
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.badgeDone { background: #dff6dd; color: #0e5a0e; }
+.badgeDraft { background: #fff4ce; color: #7a5b00; }
+
+.dupe { color: #c19c00; margin-left: 6px; cursor: help; }
+
+.empty {
+  padding: 36px 16px;
+  text-align: center;
+  color: $muted;
+}
+
+/* ---------- Form ---------- */
+.form { max-width: 1100px; margin: 0 auto; }
+
+.formHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.formTitle { margin: 0; font-size: 20px; color: $brand; }
+
+.meta {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: $muted;
+  background: $brandLight;
+  border-radius: 6px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.section {
+  border: 1px solid $border;
+  border-radius: 6px;
+  margin-bottom: 14px;
+  background: #fff;
+}
+
+.sectionTitle {
+  margin: 0;
+  padding: 10px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: $brand;
+  border-radius: 5px 5px 0 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sectionNumber {
+  display: inline-flex;
+  width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  color: $brand;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sectionBody {
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.full { grid-column: 1 / -1; }
+
+.checkGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+
+  @media (max-width: 720px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stickyBar {
+  position: sticky;
+  bottom: 0;
+  background: #fff;
+  border-top: 1px solid $border;
+  padding: 10px 0;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  z-index: 5;
+}
+
+/* ---------- Tag input ---------- */
+.tagBox {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  border: 1px solid #8a8886;
+  border-radius: 2px;
+  padding: 4px 6px;
+  min-height: 32px;
+  background: #fff;
+
+  &:focus-within { border-color: $brand; box-shadow: 0 0 0 1px $brand; }
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: $brandLight;
+  border: 1px solid #b7cce0;
+  color: $brand;
+  border-radius: 12px;
+  padding: 1px 4px 1px 10px;
+  font-size: 13px;
+}
+
+.tagRemove {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: $brand;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 4px;
+  border-radius: 50%;
+
+  &:hover { background: #cfdeee; }
+}
+
+.tagInput {
+  flex: 1 1 120px;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  min-width: 100px;
+  background: transparent;
+}
+
+.hint { font-size: 12px; color: $muted; margin-top: 2px; }
+
+/* ---------- Logo ---------- */
+.logoRow { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+
+.logoPreview {
+  width: 200px;
+  height: 90px;
+  border: 1px dashed #8a8886;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+  background-image: linear-gradient(45deg, #f1f1f1 25%, transparent 25%), linear-gradient(-45deg, #f1f1f1 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f1f1 75%), linear-gradient(-45deg, transparent 75%, #f1f1f1 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  color: $muted;
+  font-size: 12px;
+  text-align: center;
+
+  img { max-width: 100%; max-height: 100%; object-fit: contain; }
+}
+
+/* ---------- PDF dialog ---------- */
+.pdfLayout {
+  display: grid;
+  grid-template-columns: minmax(300px, 420px) 1fr;
+  gap: 16px;
+  height: calc(100vh - 150px);
+  min-height: 420px;
+  padding: 0 24px 12px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+}
+
+.pdfControls { overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px; }
+
+.pdfPreview {
+  border: 1px solid $border;
+  border-radius: 4px;
+  background: #e9edf1;
+  position: relative;
+  min-height: 420px;
+
+  iframe { width: 100%; height: 100%; min-height: 420px; border: none; display: block; }
+}
+
+.previewBusy { position: absolute; top: 8px; right: 8px; background: #fff; border-radius: 4px; padding: 4px 8px; }
+
+.overflowField :global(.ms-TextField-fieldGroup) { border-color: #d83b01; }
+
+.setupBox { max-width: 700px; margin: 24px auto; }
