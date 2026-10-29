@@ -1,4 +1,6 @@
-import { SpClient, AppError, escapeODataString } from './SpClient';
+import { SpClient, escapeODataString } from './SpClient';
+import { AppError } from './errors';
+import { IProvisioner } from './contracts';
 
 interface IFieldDef {
   name: string;
@@ -53,7 +55,7 @@ export const LIST_FIELDS: IFieldDef[] = [
 ];
 
 /** Crea (se mancano) la lista dei casi e la libreria dei loghi. Richiede il permesso "Gestisci liste". */
-export class ProvisioningService {
+export class ProvisioningService implements IProvisioner {
   constructor(private sp: SpClient, private listTitle: string, private libraryTitle: string) {}
 
   private async listExists(title: string): Promise<boolean> {

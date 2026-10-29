@@ -1,0 +1,25 @@
+[Unit]
+Description=Archivio Use Case - AD Consulting
+After=network.target
+
+[Service]
+Type=simple
+User=ucm
+Group=ucm
+EnvironmentFile=/etc/ad-usecase-archive/ucm.env
+ExecStart=/opt/ad-usecase-archive/bin/ucm-server
+Restart=on-failure
+RestartSec=3
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+ReadWritePaths=/var/lib/ad-usecase-archive
+
+[Install]
+WantedBy=multi-user.target

@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { DefaultButton, Checkbox, Label } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { AssetService } from '../../../services/AssetService';
+import { IAssetStore } from '../../../services/contracts';
 import { processLogoFile } from '../../../utils/image';
 
 export interface ILogoPickerProps {
   label: string;
-  assets: AssetService;
+  assets: IAssetStore;
   /** URL server-relative del logo salvato (se esiste). */
   savedUrl: string;
   /** Nuovo logo scelto ma non ancora salvato (data URL PNG). */

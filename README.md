@@ -7,6 +7,16 @@ Web part SharePoint Framework 1.21.1 (React 17, TypeScript, Fluent UI v8) per ra
 - Excel: [ExcelJS](https://github.com/exceljs/exceljs) (.xlsx nativo con intestazioni evidenziate, riga bloccata, wrap text, testi forzati a stringa).
 - Concorrenza ottimistica con `odata.etag` / `If-Match`.
 
+## Due modi di usarlo
+| | Web part SharePoint | **Standalone Linux** |
+|---|---|---|
+| Pacchetto | `deploy/ad-usecase-archive.sppkg` | `deploy/ad-usecase-archive-linux-v1.0.0.tar.gz` |
+| Dati | lista SharePoint + libreria | SQLite + file sul server |
+| Accesso | account Microsoft 365 | utenti locali (admin / editor / reader) |
+| Guida | [docs/GUIDA-AMMINISTRATORE.md](docs/GUIDA-AMMINISTRATORE.md) | [standalone/README.md](standalone/README.md) |
+
+La stessa interfaccia, le stesse schede PDF e lo stesso export Excel sono condivisi: i componenti React dipendono solo dai contratti in `src/services/contracts.ts`, implementati da `SharePointBackend` e da `standalone/web/HttpBackend.ts`.
+
 ## Struttura
 ```
 src/
@@ -20,6 +30,8 @@ provision/Provision-UseCaseArchive.ps1   provisioning PnP PowerShell
 deploy/ad-usecase-archive.sppkg     pacchetto pronto per l'App Catalog
 docs/GUIDA-AMMINISTRATORE.md        guida passo-passo
 scripts/test-logic.js               test di PDF/Excel/duplicati/anonimizzazione (npm run test:logic)
+standalone/                         versione per Linux: server Node.js + SQLite, web app, installer systemd, Dockerfile
+                                    (node standalone/build.js; npm run test:standalone)
 ```
 
 ## Comandi

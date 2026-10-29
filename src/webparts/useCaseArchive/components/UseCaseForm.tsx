@@ -5,8 +5,8 @@ import {
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
 import { IUseCase, IUserPermissions, SERVIZI_AD, CaseStatus } from '../../../models/UseCase';
-import { AssetService } from '../../../services/AssetService';
-import { ConflictError } from '../../../services/UseCaseService';
+import { IAssetStore } from '../../../services/contracts';
+import { ConflictError } from '../../../services/errors';
 import { TagInput } from './TagInput';
 import { LogoPicker } from './LogoPicker';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -24,7 +24,7 @@ export interface IUseCaseFormProps {
   readOnly: boolean;
   sectors: string[];
   allItems: IUseCase[];
-  assets: AssetService;
+  assets: IAssetStore;
   permissions: IUserPermissions;
   onSave: (uc: IUseCase, logo: ILogoChange, force: boolean) => Promise<IUseCase>;
   onClose: () => void;

@@ -1,17 +1,9 @@
-import { SpClient, AppError, escapeODataString } from './SpClient';
+import { SpClient, escapeODataString } from './SpClient';
+import { AppError, ConflictError } from './errors';
+import { IUseCaseStore } from './contracts';
 import { IUseCase, IUserPermissions, CaseStatus } from '../models/UseCase';
 import { joinList, splitList } from '../utils/format';
 
-/** Sollevata quando SharePoint rifiuta la scrittura (HTTP 412): qualcun altro ha modificato il caso. */
-export class ConflictError extends AppError {
-  public latest?: IUseCase;
-
-  constructor(latest?: IUseCase) {
-    super('Il caso è stato modificato da un altro utente.', 412);
-    this.latest = latest;
-    Object.setPrototypeOf(this, ConflictError.prototype);
-  }
-}
 
 const SELECT = [
   'Id', 'Title', 'Settore', 'FatturatoCliente', 'Localizzazione', 'NomeProgetto', 'AnnoProgetto', 'SpesaProgetto',
@@ -20,7 +12,7 @@ const SELECT = [
   'Created', 'Modified', 'Author/Title', 'Author/EMail', 'Editor/Title'
 ].join(',');
 
-export class UseCaseService {
+export class UseCaseService implements IUseCaseStore {
   private entityType?: string;
 
   constructor(private sp: SpClient, private listTitle: string) {}

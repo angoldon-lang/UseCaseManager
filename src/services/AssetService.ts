@@ -1,9 +1,11 @@
-import { SpClient, AppError, escapeODataString } from './SpClient';
+import { SpClient, escapeODataString } from './SpClient';
+import { AppError } from './errors';
+import { IAssetStore } from './contracts';
 
 const AD_LOGO_NAME = 'ad-consulting-logo.png';
 
 /** Gestione dei loghi nella libreria documentale "Use Case Assets". */
-export class AssetService {
+export class AssetService implements IAssetStore {
   private folderUrl?: string;
   private cache: { [url: string]: string | null } = {};
 

@@ -1,4 +1,4 @@
-import { AppError } from '../services/SpClient';
+import { AppError } from '../services/errors';
 
 const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_DIMENSION = 800;

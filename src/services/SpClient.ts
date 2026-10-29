@@ -1,18 +1,6 @@
 import { SPHttpClient, SPHttpClientResponse, ISPHttpClientOptions } from '@microsoft/sp-http';
+import { AppError } from './errors';
 
-/** Errore applicativo con messaggio già in italiano, pronto per essere mostrato. */
-export class AppError extends Error {
-  public status: number;
-  public code: string;
-
-  constructor(message: string, status: number = 0, code: string = '') {
-    super(message);
-    this.status = status;
-    this.code = code;
-    // Necessario con target ES5 per mantenere instanceof.
-    Object.setPrototypeOf(this, AppError.prototype);
-  }
-}
 
 export function escapeODataString(value: string): string {
   return encodeURIComponent(value.replace(/'/g, "''"));

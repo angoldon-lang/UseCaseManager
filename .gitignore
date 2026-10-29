@@ -19,3 +19,7 @@ obj
 *.sppkg
 !deploy/*.sppkg
 release
+
+dist-standalone
+release-standalone
+data

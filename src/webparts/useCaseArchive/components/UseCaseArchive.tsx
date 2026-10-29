@@ -1,14 +1,11 @@
 import * as React from 'react';
-import { SPHttpClient } from '@microsoft/sp-http';
 import {
   PrimaryButton, DefaultButton, MessageBar, MessageBarType, Spinner, SpinnerSize
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
 import { IUseCase, IUserPermissions, IWebPartSettings, emptyUseCase } from '../../../models/UseCase';
-import { SpClient, AppError } from '../../../services/SpClient';
-import { UseCaseService } from '../../../services/UseCaseService';
-import { AssetService } from '../../../services/AssetService';
-import { ProvisioningService } from '../../../services/ProvisioningService';
+import { AppError } from '../../../services/errors';
+import { IBackend } from '../../../services/contracts';
 import { exportToExcel } from '../../../services/ExcelService';
 import { UseCaseTable, FilterBar, IFilters, EMPTY_FILTERS } from './UseCaseTable';
 import { UseCaseForm, ILogoChange } from './UseCaseForm';
@@ -18,9 +15,10 @@ import { ConfirmDialog } from './ConfirmDialog';
 import { Notifications, INotification } from './Notifications';
 
 export interface IUseCaseArchiveProps {
-  spHttpClient: SPHttpClient;
-  webUrl: string;
+  backend: IBackend;
   settings: IWebPartSettings;
+  /** Contenuto aggiuntivo nella barra in alto (es. utente connesso e logout nella versione standalone). */
+  headerExtra?: React.ReactNode;
 }
 
 type View =
@@ -33,12 +31,9 @@ let notificationSeq = 1;
 
 const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
   const settings = props.settings;
-  const sp = React.useMemo(function () { return new SpClient(props.spHttpClient, props.webUrl); }, [props.spHttpClient, props.webUrl]);
-  const service = React.useMemo(function () { return new UseCaseService(sp, settings.listTitle); }, [sp, settings.listTitle]);
-  const assets = React.useMemo(function () { return new AssetService(sp, settings.assetsLibraryTitle); }, [sp, settings.assetsLibraryTitle]);
-  const provisioning = React.useMemo(function () {
-    return new ProvisioningService(sp, settings.listTitle, settings.assetsLibraryTitle);
-  }, [sp, settings.listTitle, settings.assetsLibraryTitle]);
+  const backend = props.backend;
+  const service = backend.service;
+  const assets = backend.assets;
 
   const [items, setItems] = React.useState<IUseCase[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -87,7 +82,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
     });
     assets.getAdLogo().then(function (l) { if (!cancelled) { setAdLogo(l); } }).catch(function () { /* logo opzionale */ });
     return function () { cancelled = true; };
-  }, [service, assets]);
+  }, [backend]);
 
   // ---- azioni --------------------------------------------------------------------------------------
 
@@ -206,6 +201,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
           </>
         )}
         <DefaultButton iconProps={{ iconName: 'Settings' }} text="Impostazioni" onClick={function () { setShowSettings(true); }} />
+        {props.headerExtra}
       </div>
     </div>
   );
@@ -218,7 +214,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
       <div className={styles.setupBox}>
         <MessageBar messageBarType={MessageBarType.error} isMultiline={true}>
           {loadError.message}
-          {loadError.status === 404 && (
+          {loadError.status === 404 && backend.provisioning && (
             <div style={{ marginTop: 6 }}>
               La lista "{settings.listTitle}" o la libreria "{settings.assetsLibraryTitle}" non esistono ancora in questo sito. Se hai il permesso
               "Gestisci liste" puoi crearle dalle Impostazioni; in alternativa usa lo script di provisioning fornito.
@@ -291,9 +287,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
 
       {showSettings && (
         <SettingsPanel
-          assets={assets}
-          provisioning={provisioning}
-          settings={settings}
+          backend={backend}
           adLogo={adLogo}
           onAdLogoChanged={setAdLogo}
           onProvisioned={function () { setLoading(true); refresh().then(function () { setLoading(false); }); }}

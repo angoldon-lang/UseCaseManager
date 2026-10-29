@@ -1,0 +1,17 @@
+services:
+  archivio:
+    image: ad-usecase-archive
+    build:
+      context: ..
+      dockerfile: standalone/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      UCM_SITE_TITLE: "Archivio Use Case"
+      # UCM_ADMIN_PASSWORD: "cambia-questa-password"   # solo al primo avvio; altrimenti vedere "docker compose logs"
+      # UCM_TRUST_PROXY: "1"                           # se dietro a un reverse proxy HTTPS
+    volumes:
+      - ucm-data:/data
+volumes:
+  ucm-data:

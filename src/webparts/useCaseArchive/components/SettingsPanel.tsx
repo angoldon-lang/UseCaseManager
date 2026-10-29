@@ -1,14 +1,10 @@
 import * as React from 'react';
 import { Panel, PanelType, PrimaryButton, MessageBar, MessageBarType, Spinner, SpinnerSize, Separator } from '@fluentui/react';
-import { AssetService } from '../../../services/AssetService';
-import { ProvisioningService } from '../../../services/ProvisioningService';
-import { IWebPartSettings } from '../../../models/UseCase';
+import { IBackend } from '../../../services/contracts';
 import { LogoPicker } from './LogoPicker';
 
 export interface ISettingsPanelProps {
-  assets: AssetService;
-  provisioning: ProvisioningService;
-  settings: IWebPartSettings;
+  backend: IBackend;
   adLogo: string | null;
   onAdLogoChanged: (dataUrl: string | null) => void;
   onProvisioned: () => void;
@@ -17,6 +13,7 @@ export interface ISettingsPanelProps {
 }
 
 export const SettingsPanel: React.FC<ISettingsPanelProps> = function (props) {
+  const backend = props.backend;
   const [pending, setPending] = React.useState<string | null>(null);
   const [removed, setRemoved] = React.useState(false);
   const [busy, setBusy] = React.useState(false);
@@ -27,10 +24,10 @@ export const SettingsPanel: React.FC<ISettingsPanelProps> = function (props) {
     setBusy(true);
     try {
       if (pending) {
-        await props.assets.setAdLogo(pending);
+        await backend.assets.setAdLogo(pending);
         props.onAdLogoChanged(pending);
       } else if (removed) {
-        await props.assets.removeAdLogo();
+        await backend.assets.removeAdLogo();
         props.onAdLogoChanged(null);
       }
       setPending(null);
@@ -44,9 +41,12 @@ export const SettingsPanel: React.FC<ISettingsPanelProps> = function (props) {
   };
 
   const provision = async function (): Promise<void> {
+    if (!backend.provisioning) {
+      return;
+    }
     setBusy(true);
     try {
-      setLog(await props.provisioning.provision());
+      setLog(await backend.provisioning.provision());
       props.onProvisioned();
     } catch (e) {
       props.notify(MessageBarType.error, (e as Error).message);
@@ -58,27 +58,34 @@ export const SettingsPanel: React.FC<ISettingsPanelProps> = function (props) {
   return (
     <Panel isOpen={true} type={PanelType.medium} headerText="Impostazioni" onDismiss={props.onDismiss} closeButtonAriaLabel="Chiudi">
       <h3>Logo AD Consulting</h3>
-      <p>Il logo è salvato nella libreria "{props.settings.assetsLibraryTitle}" e compare nell'intestazione dell'applicazione e delle schede PDF.</p>
-      <LogoPicker
-        label="Logo aziendale"
-        assets={props.assets}
-        savedUrl=""
-        pending={pending || (removed ? null : props.adLogo)}
-        removed={removed}
-        onPick={function (d) { setPending(d); setRemoved(false); }}
-        onRemove={function () { setPending(null); setRemoved(true); }}
-        onError={function (m) { props.notify(MessageBarType.error, m); }}
-      />
-      <div style={{ marginTop: 12 }}>
-        <PrimaryButton text="Salva logo" disabled={!dirty || busy} onClick={saveLogo} />
-      </div>
-      <Separator />
-      <h3>Lista e libreria SharePoint</h3>
-      <p>
-        Lista: <strong>{props.settings.listTitle}</strong> · Libreria: <strong>{props.settings.assetsLibraryTitle}</strong>.
-        I nomi si modificano dalle proprietà della web part. Il pulsante crea gli elementi mancanti (serve il permesso "Gestisci liste", tipicamente proprietario del sito).
-      </p>
-      <PrimaryButton text="Verifica / crea lista e libreria" iconProps={{ iconName: 'Settings' }} disabled={busy} onClick={provision} />
+      <p>Il logo compare nell'intestazione dell'applicazione e delle schede PDF. {backend.storageDescription}.</p>
+      {backend.canManageSettings ? (
+        <>
+          <LogoPicker
+            label="Logo aziendale"
+            assets={backend.assets}
+            savedUrl=""
+            pending={pending || (removed ? null : props.adLogo)}
+            removed={removed}
+            onPick={function (d) { setPending(d); setRemoved(false); }}
+            onRemove={function () { setPending(null); setRemoved(true); }}
+            onError={function (m) { props.notify(MessageBarType.error, m); }}
+          />
+          <div style={{ marginTop: 12 }}>
+            <PrimaryButton text="Salva logo" disabled={!dirty || busy} onClick={saveLogo} />
+          </div>
+        </>
+      ) : (
+        <MessageBar messageBarType={MessageBarType.info}>Solo un amministratore può modificare il logo aziendale.</MessageBar>
+      )}
+      {backend.provisioning && (
+        <>
+          <Separator />
+          <h3>Lista e libreria SharePoint</h3>
+          <p>Il pulsante crea gli elementi mancanti (serve il permesso "Gestisci liste", tipicamente proprietario del sito).</p>
+          <PrimaryButton text="Verifica / crea lista e libreria" iconProps={{ iconName: 'Settings' }} disabled={busy} onClick={provision} />
+        </>
+      )}
       {busy && <Spinner size={SpinnerSize.small} label="Operazione in corso…" labelPosition="right" style={{ marginTop: 8 }} />}
       {log.length > 0 && (
         <MessageBar messageBarType={MessageBarType.success} isMultiline={true} styles={{ root: { marginTop: 12 } }}>

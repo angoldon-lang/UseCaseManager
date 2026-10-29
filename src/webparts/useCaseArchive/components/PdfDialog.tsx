@@ -4,7 +4,7 @@ import {
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
 import { IUseCase } from '../../../models/UseCase';
-import { AssetService } from '../../../services/AssetService';
+import { IAssetStore } from '../../../services/contracts';
 import {
   IPdfTexts, IPdfResult, renderPdf, defaultTexts, findIdentifyingReferences, anonymizeTexts, labelOfTextField,
   FIELD_SECTION, SECTION_LABELS, showClientLogo
@@ -13,7 +13,7 @@ import { downloadBlob } from '../../../utils/format';
 
 export interface IPdfDialogProps {
   uc: IUseCase;
-  assets: AssetService;
+  assets: IAssetStore;
   adLogo: string | null;
   onDismiss: () => void;
   notify: (type: MessageBarType, text: string) => void;
