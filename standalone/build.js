@@ -52,8 +52,8 @@ const scssModules = {
   console.log('> server');
   fs.cpSync(path.join(__dirname, 'server'), path.join(out, 'server'), { recursive: true });
   fs.mkdirSync(path.join(out, 'bin'));
-  fs.writeFileSync(path.join(out, 'bin', 'ucm'), '#!/bin/sh\nDIR="$(cd "$(dirname "$0")/.." && pwd)"\nexec node --disable-warning=ExperimentalWarning "$DIR/server/cli.js" "$@"\n', { mode: 0o755 });
-  fs.writeFileSync(path.join(out, 'bin', 'ucm-server'), '#!/bin/sh\nDIR="$(cd "$(dirname "$0")/.." && pwd)"\nexec node --disable-warning=ExperimentalWarning "$DIR/server/index.js" "$@"\n', { mode: 0o755 });
+  fs.writeFileSync(path.join(out, 'bin', 'ucm'), '#!/bin/sh\nDIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"\nexec node --disable-warning=ExperimentalWarning "$DIR/server/cli.js" "$@"\n', { mode: 0o755 });
+  fs.writeFileSync(path.join(out, 'bin', 'ucm-server'), '#!/bin/sh\nDIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"\nexec node --disable-warning=ExperimentalWarning "$DIR/server/index.js" "$@"\n', { mode: 0o755 });
   for (const f of ['install.sh', 'uninstall.sh', 'ucm.service', 'ucm.env.example', 'nginx.conf.example']) {
     fs.copyFileSync(path.join(__dirname, 'install', f), path.join(out, f));
     if (f.endsWith('.sh')) { fs.chmodSync(path.join(out, f), 0o755); }
