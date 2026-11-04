@@ -1,47 +1,83 @@
-$brand: #0f4c81;
-$brandLight: #eef3f8;
-$border: #d0d7de;
-$text: #1f2a37;
-$muted: #5a6472;
+// Palette derivata dal logo AD Consulting
+$blue: #0098ff;
+$blueDark: #0073c7;
+$blueDeep: #004069;
+$magenta: #db0b5b;
+$ink: #1b2733;
+$muted: #5b6b7b;
+$line: #e3e9ef;
+$surface: #ffffff;
+$tint: #f3f8fd;
+$shadow: 0 1px 2px rgba(15, 23, 32, 0.05), 0 4px 16px rgba(15, 23, 32, 0.06);
+$shadowHover: 0 2px 4px rgba(15, 23, 32, 0.06), 0 8px 24px rgba(0, 115, 199, 0.12);
+$radius: 14px;
 
 .app {
-  font-family: 'Segoe UI', 'Segoe UI Web (West European)', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-  color: $text;
+  font-family: 'Segoe UI', 'Segoe UI Web (West European)', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif;
+  color: $ink;
   position: relative;
   min-width: 0;
+  padding: 4px 0 24px;
 }
 
+/* ---------- Intestazione ---------- */
 .header {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 18px 24px;
   flex-wrap: wrap;
-  padding: 12px 0 16px;
-  border-bottom: 3px solid $brand;
-  margin-bottom: 16px;
+  padding: 16px 22px 18px;
+  margin-bottom: 18px;
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: linear-gradient(90deg, $blue 0%, $blue 78%, $magenta 78%, $magenta 100%);
+  }
 }
 
 .logo {
-  max-height: 48px;
-  max-width: 180px;
+  height: 48px;
+  width: auto;
+  max-width: 190px;
   object-fit: contain;
+  display: block;
 }
 
-.brandText {
-  font-size: 20px;
-  font-weight: 700;
-  color: $brand;
+.titleBlock {
+  flex: 1 1 220px;
+  min-width: 0;
+  padding-left: 22px;
+  border-left: 1px solid $line;
 }
 
 .title {
-  flex: 1 1 200px;
   margin: 0;
   font-size: 22px;
-  font-weight: 600;
-  color: $brand;
+  line-height: 1.2;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: $ink;
+}
+
+.subtitle {
+  margin: 3px 0 0;
+  font-size: 13px;
+  color: $muted;
 }
 
 .toolbar {
+  margin-left: auto;
+  justify-content: flex-end;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -50,25 +86,82 @@ $muted: #5a6472;
 
 .notifications {
   position: fixed;
-  top: 12px;
-  right: 12px;
+  top: 14px;
+  right: 14px;
   z-index: 1000000;
-  width: min(420px, calc(100vw - 24px));
+  width: min(420px, calc(100vw - 28px));
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+
+  > * {
+    border-radius: 10px;
+    box-shadow: 0 6px 24px rgba(15, 23, 32, 0.18);
+    overflow: hidden;
+  }
 }
 
+/* ---------- Riepilogo ---------- */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.stat {
+  background: $surface;
+  border-radius: 12px;
+  box-shadow: $shadow;
+  padding: 12px 16px 12px 18px;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: $blue;
+  }
+}
+
+.statWarn::before { background: $magenta; }
+.statOk::before { background: #1f9d55; }
+.statDraft::before { background: #e0a100; }
+
+.statValue {
+  font-size: 26px;
+  font-weight: 650;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.statLabel {
+  margin-top: 2px;
+  font-size: 12px;
+  color: $muted;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ---------- Filtri e tabella ---------- */
 .filters {
   display: grid;
   grid-template-columns: minmax(220px, 2fr) repeat(5, minmax(130px, 1fr));
-  gap: 10px;
+  gap: 12px;
   align-items: end;
-  background: $brandLight;
-  border: 1px solid $border;
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 12px;
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
+  padding: 14px 16px;
+  margin-bottom: 14px;
 
   @media (max-width: 1100px) {
     grid-template-columns: repeat(3, minmax(130px, 1fr));
@@ -83,46 +176,65 @@ $muted: #5a6472;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 8px;
-  margin: 4px 0 8px;
+  margin: 2px 4px 10px;
   color: $muted;
   font-size: 13px;
 }
 
 .tableWrap {
   overflow-x: auto;
-  border: 1px solid $border;
-  border-radius: 6px;
-  background: #fff;
+  border-radius: $radius;
+  background: $surface;
+  box-shadow: $shadow;
+
+  :global(.ms-DetailsHeader) {
+    background: $tint;
+    border-bottom: 1px solid $line;
+    padding-top: 4px;
+  }
+  :global(.ms-DetailsHeader-cellName) {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: $muted;
+  }
+  :global(.ms-DetailsRow) {
+    border-bottom: 1px solid #eef2f6;
+    transition: background 0.12s ease;
+  }
+  :global(.ms-DetailsRow:hover) {
+    background: $tint;
+  }
 }
 
 .cards {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .card {
-  border: 1px solid $border;
-  border-left: 4px solid $brand;
-  border-radius: 6px;
-  padding: 10px 12px;
-  background: #fff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: $surface;
+  box-shadow: $shadow;
+  border-left: 4px solid $blue;
 }
 
 .cardTitle {
-  font-weight: 600;
-  font-size: 15px;
+  font-weight: 650;
+  font-size: 16px;
 }
 
 .cardMeta {
   color: $muted;
   font-size: 12px;
-  margin: 2px 0 6px;
+  margin: 3px 0 6px;
 }
 
 .link {
-  color: $brand;
-  font-weight: 600;
+  color: $blueDark;
+  font-weight: 650;
   cursor: pointer;
   background: none;
   border: none;
@@ -131,27 +243,40 @@ $muted: #5a6472;
   font-size: inherit;
   font-family: inherit;
 
-  &:hover { text-decoration: underline; }
+  &:hover { text-decoration: underline; color: $blueDeep; }
 }
 
 .badge {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px 2px 8px;
+  border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
   white-space: nowrap;
+
+  &::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+  }
 }
 
-.badgeDone { background: #dff6dd; color: #0e5a0e; }
-.badgeDraft { background: #fff4ce; color: #7a5b00; }
+.badgeDone { background: #e3f6ea; color: #167a40; }
+.badgeDraft { background: #fff3d1; color: #8a6100; }
 
-.dupe { color: #c19c00; margin-left: 6px; cursor: help; }
+.dupe { color: $magenta; margin-left: 6px; cursor: help; }
 
 .empty {
-  padding: 36px 16px;
+  padding: 44px 16px;
   text-align: center;
   color: $muted;
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
 }
 
 /* ---------- Form ---------- */
@@ -163,64 +288,71 @@ $muted: #5a6472;
   align-items: flex-start;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  padding: 16px 20px;
+  background: $surface;
+  border-radius: $radius;
+  box-shadow: $shadow;
 }
 
-.formTitle { margin: 0; font-size: 20px; color: $brand; }
+.formTitle { margin: 0; font-size: 20px; font-weight: 650; color: $ink; }
 
 .meta {
   display: flex;
-  gap: 18px;
+  gap: 8px 22px;
   flex-wrap: wrap;
   font-size: 12px;
   color: $muted;
-  background: $brandLight;
-  border-radius: 6px;
-  padding: 8px 12px;
-  margin-bottom: 12px;
+  background: $tint;
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 14px;
 }
 
 .section {
-  border: 1px solid $border;
-  border-radius: 6px;
-  margin-bottom: 14px;
-  background: #fff;
+  border-radius: $radius;
+  margin-bottom: 16px;
+  background: $surface;
+  box-shadow: $shadow;
+  overflow: hidden;
 }
 
 .sectionTitle {
   margin: 0;
-  padding: 10px 14px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  background: $brand;
-  border-radius: 5px 5px 0 0;
+  padding: 14px 20px;
+  font-size: 16px;
+  font-weight: 650;
+  color: $ink;
+  background: linear-gradient(90deg, $tint 0%, $surface 70%);
+  border-bottom: 1px solid $line;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sectionNumber {
   display: inline-flex;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: #fff;
-  color: $brand;
-  font-size: 13px;
+  background: linear-gradient(135deg, $blue, $blueDark);
+  color: #fff;
+  font-size: 14px;
   font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 152, 255, 0.35);
 }
 
 .sectionBody {
-  padding: 14px;
+  padding: 18px 20px 20px;
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px 16px;
+  gap: 14px 20px;
 
   @media (max-width: 720px) {
     grid-template-columns: 1fr;
+    padding: 14px;
   }
 }
 
@@ -229,7 +361,7 @@ $muted: #5a6472;
 .checkGrid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px 12px;
+  gap: 10px 14px;
 
   @media (max-width: 720px) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -238,40 +370,44 @@ $muted: #5a6472;
 
 .stickyBar {
   position: sticky;
-  bottom: 0;
-  background: #fff;
-  border-top: 1px solid $border;
-  padding: 10px 0;
+  bottom: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(6px);
+  border-radius: $radius;
+  box-shadow: 0 -2px 20px rgba(15, 23, 32, 0.12);
+  padding: 12px 16px;
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
   z-index: 5;
 }
 
-/* ---------- Tag input ---------- */
+/* ---------- Tag ---------- */
 .tagBox {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
-  border: 1px solid #8a8886;
-  border-radius: 2px;
-  padding: 4px 6px;
+  border: 1px solid #8e9ba8;
+  border-radius: 8px;
+  padding: 4px 8px;
   min-height: 32px;
   background: #fff;
 
-  &:focus-within { border-color: $brand; box-shadow: 0 0 0 1px $brand; }
+  &:hover { border-color: $ink; }
+  &:focus-within { border-color: $blueDark; box-shadow: 0 0 0 1px $blueDark; }
 }
 
 .tag {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: $brandLight;
-  border: 1px solid #b7cce0;
-  color: $brand;
-  border-radius: 12px;
-  padding: 1px 4px 1px 10px;
+  background: #e6f3fd;
+  border: 1px solid #b7dcf7;
+  color: $blueDeep;
+  border-radius: 999px;
+  padding: 1px 4px 1px 11px;
   font-size: 13px;
 }
 
@@ -279,13 +415,13 @@ $muted: #5a6472;
   border: none;
   background: transparent;
   cursor: pointer;
-  color: $brand;
+  color: $blueDeep;
   font-size: 15px;
   line-height: 1;
-  padding: 0 4px;
+  padding: 0 5px;
   border-radius: 50%;
 
-  &:hover { background: #cfdeee; }
+  &:hover { background: #bfe0f9; }
 }
 
 .tagInput {
@@ -297,22 +433,24 @@ $muted: #5a6472;
   background: transparent;
 }
 
-.hint { font-size: 12px; color: $muted; margin-top: 2px; }
+.hint { font-size: 12px; color: $muted; margin-top: 3px; }
 
 /* ---------- Logo ---------- */
-.logoRow { display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+.logoRow { display: flex; gap: 18px; flex-wrap: wrap; align-items: center; }
 
 .logoPreview {
-  width: 200px;
-  height: 90px;
-  border: 1px dashed #8a8886;
-  border-radius: 4px;
+  width: 210px;
+  height: 96px;
+  border: 1px dashed #9aa7b4;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 6px;
+  box-sizing: border-box;
   background-color: #fff;
-  background-image: linear-gradient(45deg, #f1f1f1 25%, transparent 25%), linear-gradient(-45deg, #f1f1f1 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #f1f1f1 75%), linear-gradient(-45deg, transparent 75%, #f1f1f1 75%);
+  background-image: linear-gradient(45deg, #f1f4f7 25%, transparent 25%), linear-gradient(-45deg, #f1f4f7 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f1f4f7 75%), linear-gradient(-45deg, transparent 75%, #f1f4f7 75%);
   background-size: 16px 16px;
   background-position: 0 0, 0 8px, 8px -8px, -8px 0;
   color: $muted;
@@ -322,14 +460,14 @@ $muted: #5a6472;
   img { max-width: 100%; max-height: 100%; object-fit: contain; }
 }
 
-/* ---------- PDF dialog ---------- */
+/* ---------- Dialog PDF ---------- */
 .pdfLayout {
   display: grid;
   grid-template-columns: minmax(300px, 420px) 1fr;
-  gap: 16px;
+  gap: 18px;
   height: calc(100vh - 150px);
   min-height: 420px;
-  padding: 0 24px 12px;
+  padding: 0 24px 14px;
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -340,17 +478,17 @@ $muted: #5a6472;
 .pdfControls { overflow-y: auto; padding-right: 8px; display: flex; flex-direction: column; gap: 10px; }
 
 .pdfPreview {
-  border: 1px solid $border;
-  border-radius: 4px;
-  background: #e9edf1;
+  border-radius: 12px;
+  background: #e9eef3;
   position: relative;
   min-height: 420px;
+  overflow: hidden;
 
   iframe { width: 100%; height: 100%; min-height: 420px; border: none; display: block; }
 }
 
-.previewBusy { position: absolute; top: 8px; right: 8px; background: #fff; border-radius: 4px; padding: 4px 8px; }
+.previewBusy { position: absolute; top: 10px; right: 10px; background: #fff; border-radius: 8px; padding: 4px 10px; box-shadow: $shadow; }
 
-.overflowField :global(.ms-TextField-fieldGroup) { border-color: #d83b01; }
+.overflowField :global(.ms-TextField-fieldGroup) { border-color: $magenta; }
 
 .setupBox { max-width: 700px; margin: 24px auto; }

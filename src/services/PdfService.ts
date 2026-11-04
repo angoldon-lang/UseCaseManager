@@ -54,9 +54,10 @@ export const FIELD_SECTION: { [field: string]: string } = {
   kpi: 'benefici'
 };
 
-const BRAND = '#0F4C81';
+const BRAND = '#0073C7';
+const ACCENT = '#DB0B5B';
 const GREY = '#5A6472';
-const LIGHT = '#EEF3F8';
+const LIGHT = '#EAF4FD';
 
 export function defaultTexts(uc: IUseCase): IPdfTexts {
   return {
@@ -180,7 +181,7 @@ function heading(section: string, index: number): any[] {
       margin: [0, 11, 0, 2],
       characterSpacing: 0.4
     },
-    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.6, lineColor: '#C9D6E4' }], margin: [0, 0, 0, 5] }
+    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 0.6, lineColor: '#CFE2F3' }], margin: [0, 0, 0, 5] }
   ];
 }
 
@@ -240,7 +241,13 @@ export function buildDocDefinition(input: IPdfInput, tracker: ITracker): any {
 
   const content: any[] = [
     { columns: [headerLeft, headerRight], columnGap: 10 },
-    { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.8, lineColor: BRAND }], margin: [0, 6, 0, 0] },
+    {
+      canvas: [
+        { type: 'line', x1: 0, y1: 0, x2: 515, y2: 0, lineWidth: 1.8, lineColor: BRAND },
+        { type: 'line', x1: 400, y1: 0, x2: 515, y2: 0, lineWidth: 1.8, lineColor: ACCENT }
+      ],
+      margin: [0, 6, 0, 0]
+    },
     { text: 'SCHEDA USE CASE', color: GREY, fontSize: 8, characterSpacing: 1.2, margin: [0, 12, 0, 2] },
     { text: t.titolo || uc.nomeProgetto || 'Use case', fontSize: 18, bold: true, color: BRAND, margin: [0, 0, 0, 2], id: 'title:contesto' }
   ];

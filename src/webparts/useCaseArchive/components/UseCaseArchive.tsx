@@ -1,13 +1,15 @@
 import * as React from 'react';
 import {
-  PrimaryButton, DefaultButton, MessageBar, MessageBarType, Spinner, SpinnerSize
+  PrimaryButton, DefaultButton, MessageBar, MessageBarType, Spinner, SpinnerSize, ThemeProvider
 } from '@fluentui/react';
+import { brandTheme } from './brandTheme';
+import { DEFAULT_AD_LOGO } from '../../../assets/adLogo';
 import styles from './UseCaseArchive.module.scss';
 import { IUseCase, IUserPermissions, IWebPartSettings, emptyUseCase } from '../../../models/UseCase';
 import { AppError } from '../../../services/errors';
 import { IBackend } from '../../../services/contracts';
 import { exportToExcel } from '../../../services/ExcelService';
-import { UseCaseTable, FilterBar, IFilters, EMPTY_FILTERS } from './UseCaseTable';
+import { UseCaseTable, FilterBar, StatTiles, IFilters, EMPTY_FILTERS } from './UseCaseTable';
 import { UseCaseForm, ILogoChange } from './UseCaseForm';
 import { PdfDialog } from './PdfDialog';
 import { SettingsPanel } from './SettingsPanel';
@@ -188,10 +190,15 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
 
   // ---- rendering ------------------------------------------------------------------------------------
 
+  const logoSrc = adLogo || DEFAULT_AD_LOGO;
+
   const header = (
     <div className={styles.header}>
-      {adLogo ? <img className={styles.logo} src={adLogo} alt="AD Consulting" /> : <span className={styles.brandText}>AD Consulting</span>}
-      <h1 className={styles.title}>{settings.siteTitle}</h1>
+      <img className={styles.logo} src={logoSrc} alt="AD Consulting" />
+      <div className={styles.titleBlock}>
+        <h1 className={styles.title}>{settings.siteTitle}</h1>
+        <p className={styles.subtitle}>Casi progettuali, schede PDF ed esportazione Excel</p>
+      </div>
       <div className={styles.toolbar}>
         {view.kind === 'list' && !loadError && (
           <>
@@ -247,6 +254,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
   } else {
     body = (
       <>
+        <StatTiles items={items} />
         <FilterBar items={items} sectors={settings.sectors} filters={filters} onChange={setFilters} />
         <UseCaseTable
           items={items}
@@ -264,13 +272,13 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
   }
 
   return (
-    <div className={styles.app}>
+    <ThemeProvider theme={brandTheme} className={styles.app}>
       <Notifications items={notes} onDismiss={dismiss} />
       {header}
       {body}
 
       {pdfFor && (
-        <PdfDialog uc={pdfFor} assets={assets} adLogo={adLogo} notify={notify} onDismiss={function () { setPdfFor(null); }} />
+        <PdfDialog uc={pdfFor} assets={assets} adLogo={logoSrc} notify={notify} onDismiss={function () { setPdfFor(null); }} />
       )}
 
       {deleteFor && (
@@ -289,13 +297,14 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
         <SettingsPanel
           backend={backend}
           adLogo={adLogo}
+          defaultLogo={DEFAULT_AD_LOGO}
           onAdLogoChanged={setAdLogo}
           onProvisioned={function () { setLoading(true); refresh().then(function () { setLoading(false); }); }}
           notify={notify}
           onDismiss={function () { setShowSettings(false); }}
         />
       )}
-    </div>
+    </ThemeProvider>
   );
 };
 

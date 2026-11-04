@@ -120,7 +120,6 @@ export const PdfDialog: React.FC<IPdfDialogProps> = function (props) {
               : 'Cliente non citabile: nome e logo reali sono omessi; la scheda usa la denominazione anonima.'}
           </MessageBar>
           {logoWarning && <MessageBar messageBarType={MessageBarType.warning}>{logoWarning}</MessageBar>}
-          {!props.adLogo && <MessageBar messageBarType={MessageBarType.info}>Logo AD Consulting non configurato (Impostazioni): verrà usato il testo "AD Consulting".</MessageBar>}
 
           <Toggle label="Includi fatturato cliente" checked={includeFatturato} onText="Incluso" offText="Escluso (predefinito)"
             disabled={uc.fatturato === null} onChange={function (_, c) { setIncludeFatturato(!!c); }} />

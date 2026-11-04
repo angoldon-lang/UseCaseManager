@@ -104,6 +104,28 @@ export const FilterBar: React.FC<{ items: IUseCase[]; sectors: string[]; filters
   );
 };
 
+export const StatTiles: React.FC<{ items: IUseCase[] }> = function (props) {
+  const done = props.items.filter(function (i) { return i.stato === 'Completo'; }).length;
+  const groups = findDuplicateGroups(props.items);
+  const dupes = Object.keys(groups).length;
+  const tile = function (value: number, label: string, cls?: string): JSX.Element {
+    return (
+      <div className={styles.stat + (cls ? ' ' + cls : '')}>
+        <div className={styles.statValue}>{value}</div>
+        <div className={styles.statLabel}>{label}</div>
+      </div>
+    );
+  };
+  return (
+    <div className={styles.stats} aria-label="Riepilogo archivio">
+      {tile(props.items.length, 'Casi in archivio')}
+      {tile(done, 'Completi', styles.statOk)}
+      {tile(props.items.length - done, 'Bozze', styles.statDraft)}
+      {tile(dupes, 'Possibili duplicati', styles.statWarn)}
+    </div>
+  );
+};
+
 const StatusBadge: React.FC<{ stato: string }> = function (props) {
   return <span className={styles.badge + ' ' + (props.stato === 'Completo' ? styles.badgeDone : styles.badgeDraft)}>{props.stato}</span>;
 };
@@ -197,8 +219,8 @@ export const UseCaseTable: React.FC<IUseCaseTableProps> = function (props) {
     { key: 'vendor', name: 'Vendor', minWidth: 110, maxWidth: 180, isResizable: true, isMultiline: true, onRender: function (uc: IUseCase) { return uc.vendor.join(', '); } },
     { key: 'servizi', name: 'Servizi AD', minWidth: 140, maxWidth: 240, isResizable: true, isMultiline: true, onRender: function (uc: IUseCase) { return uc.servizi.join(', '); } },
     sortable('stato', 'Stato', 80, { maxWidth: 90, onRender: function (uc: IUseCase) { return <StatusBadge stato={uc.stato} />; } }),
-    sortable('modified', 'Ultima modifica', 120, {
-      maxWidth: 150,
+    sortable('modified', 'Ultima modifica', 140, {
+      maxWidth: 160,
       onRender: function (uc: IUseCase) { return <span title={uc.modificatoDa}>{formatDateTime(uc.modified)}</span>; }
     }),
     { key: 'azioni', name: 'Azioni', minWidth: 190, maxWidth: 200, onRender: actions }

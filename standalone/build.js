@@ -39,7 +39,7 @@ const scssModules = {
     plugins: [scssModules],
     legalComments: 'external'
   });
-  for (const f of ['index.html', 'fabric-config.js']) {
+  for (const f of ['index.html', 'fabric-config.js', 'favicon.png']) {
     fs.copyFileSync(path.join(__dirname, 'web', f), path.join(out, 'web', f));
   }
   const fontsSrc = path.join(root, 'node_modules', '@fluentui', 'font-icons-mdl2', 'fonts');

@@ -6,6 +6,7 @@ import { LogoPicker } from './LogoPicker';
 export interface ISettingsPanelProps {
   backend: IBackend;
   adLogo: string | null;
+  defaultLogo: string;
   onAdLogoChanged: (dataUrl: string | null) => void;
   onProvisioned: () => void;
   notify: (type: MessageBarType, text: string) => void;
@@ -66,6 +67,9 @@ export const SettingsPanel: React.FC<ISettingsPanelProps> = function (props) {
             assets={backend.assets}
             savedUrl=""
             pending={pending || (removed ? null : props.adLogo)}
+            fallbackPreview={props.defaultLogo}
+            fallbackCaption="In uso il logo AD Consulting predefinito. Carica un file per sostituirlo (meglio se ad alta risoluzione, anche per la stampa del PDF)."
+
             removed={removed}
             onPick={function (d) { setPending(d); setRemoved(false); }}
             onRemove={function () { setPending(null); setRemoved(true); }}

@@ -63,7 +63,7 @@ export async function buildWorkbookBlob(items: IUseCase[]): Promise<Blob> {
   header.height = 36;
   header.eachCell(function (cell: any) {
     cell.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
-    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0F4C81' } };
+    cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0073C7' } };
     cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
     cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
   });

@@ -14,6 +14,9 @@ export interface ILogoPickerProps {
   removed: boolean;
   disabled?: boolean;
   usable?: boolean;
+  /** Immagine mostrata (con avviso) quando non c'è un logo personalizzato. */
+  fallbackPreview?: string;
+  fallbackCaption?: string;
   onUsableChange?: (usable: boolean) => void;
   onPick: (dataUrl: string) => void;
   onRemove: () => void;
@@ -57,7 +60,7 @@ export const LogoPicker: React.FC<ILogoPickerProps> = function (props) {
       <Label>{props.label}</Label>
       <div className={styles.logoRow}>
         <div className={styles.logoPreview}>
-          {shown ? <img src={shown} alt="Anteprima logo" /> : <span>{hasLogo && !loadFailed ? 'Caricamento…' : hasLogo ? 'Logo non disponibile' : 'Nessun logo'}</span>}
+          {shown ? <img src={shown} alt="Anteprima logo" /> : !hasLogo && props.fallbackPreview ? <img src={props.fallbackPreview} alt="Logo predefinito" /> : <span>{hasLogo && !loadFailed ? 'Caricamento…' : hasLogo ? 'Logo non disponibile' : 'Nessun logo'}</span>}
         </div>
         {!props.disabled && (
           <div>
@@ -68,6 +71,7 @@ export const LogoPicker: React.FC<ILogoPickerProps> = function (props) {
               onClick={function () { if (fileRef.current) { fileRef.current.click(); } }}
             />
             {hasLogo && <DefaultButton style={{ marginLeft: 8 }} iconProps={{ iconName: 'Delete' }} text="Rimuovi" onClick={props.onRemove} />}
+            {!hasLogo && props.fallbackCaption && <div className={styles.hint}>{props.fallbackCaption}</div>}
             <div className={styles.hint}>PNG o JPEG, max 5 MB. La trasparenza e le proporzioni sono mantenute.</div>
           </div>
         )}

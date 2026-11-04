@@ -105,7 +105,7 @@ async function render(uc, texts, opts) {
   assert.strictEqual(ws.views[0].state, 'frozen');
   assert.strictEqual(ws.views[0].ySplit, 1);
   assert.strictEqual(ws.views[0].showGridLines, true);
-  assert.strictEqual(ws.getRow(1).getCell(1).fill.fgColor.argb, 'FF0F4C81');
+  assert.strictEqual(ws.getRow(1).getCell(1).fill.fgColor.argb, 'FF0073C7');
   assert.strictEqual(ws.getCell('B2').value, '=SUM(A1:A2)');
   assert.strictEqual(typeof ws.getCell('B2').value, 'string');
   assert.strictEqual(ws.getCell('N2').alignment.wrapText, true);

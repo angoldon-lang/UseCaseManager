@@ -33,7 +33,7 @@ Vengono creati: lista **Use Cases** (colonna `Title` = Cliente + 19 colonne dedi
 1. Crea/modifica una pagina → **+** → cerca **Archivio Use Case**.
 2. Per la tabella usa preferibilmente una sezione a **tutta larghezza** (o l'app come *pagina a pagina intera*: tipo di pagina *Single-part app page*).
 3. Pannello proprietà: titolo applicazione, nome lista, nome libreria, elenco settori (separati da virgola).
-4. Pubblica la pagina; apri **Impostazioni → Logo AD Consulting** per caricare il logo ufficiale (salvato come `ad-consulting-logo.png` nella libreria).
+4. Pubblica la pagina. Il logo AD Consulting è già incorporato nell'app (interfaccia e schede PDF); per sostituirlo con una versione ad alta risoluzione apri **Impostazioni → Logo AD Consulting** (salvato come `ad-consulting-logo.png` nella libreria).
 
 ## 6. Permessi
 | Operazione | Permesso minimo |
