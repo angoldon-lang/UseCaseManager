@@ -146,10 +146,8 @@ export function emptyUseCase(): IUseCase {
   };
 }
 
-export interface IWebPartSettings {
+export interface IAppSettings {
   siteTitle: string;
-  listTitle: string;
-  assetsLibraryTitle: string;
   sectors: string[];
 }
 

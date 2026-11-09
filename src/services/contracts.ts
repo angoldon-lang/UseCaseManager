@@ -1,6 +1,6 @@
 import { IUseCase, IUserPermissions } from '../models/UseCase';
 
-/** Archivio dei casi: implementato da SharePoint (lista) e dal server standalone (SQLite). */
+/** Archivio dei casi (implementato dal client HTTP verso il server). */
 export interface IUseCaseStore {
   getAll(): Promise<IUseCase[]>;
   getById(id: number): Promise<IUseCase>;
@@ -19,10 +19,6 @@ export interface IAssetStore {
   getAdLogo(): Promise<string | null>;
   setAdLogo(dataUrl: string): Promise<void>;
   removeAdLogo(): Promise<void>;
-}
-
-export interface IProvisioner {
-  provision(): Promise<string[]>;
 }
 
 /** Dati inviati all'AI: solo appunti e contesto, mai il nome del cliente. */
@@ -52,8 +48,6 @@ export interface IAiAssistant {
 export interface IBackend {
   service: IUseCaseStore;
   assets: IAssetStore;
-  /** Presente solo su SharePoint (creazione lista e libreria). */
-  provisioning?: IProvisioner;
   /** Elaborazione dei testi con l'AI (assente se non disponibile). */
   ai?: IAiAssistant;
   /** Perché l'AI non è disponibile (mostrato nel form). */

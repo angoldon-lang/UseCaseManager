@@ -11,6 +11,7 @@ const { openDatabase } = require('./db');
 const auth = require('./auth');
 const { sanitizeCase, bandFromAmount, ValidationError, ASSET_NAME, isPng } = require('./validate');
 const { createAi, AiError } = require('./ai');
+const { getVersion } = require('./version');
 
 const DEFAULT_SECTORS = [
   'Manifatturiero', 'Servizi finanziari', 'Sanità', 'Pubblica Amministrazione', 'Retail e GDO', 'Energia e Utilities',
@@ -190,7 +191,7 @@ function createApp(config) {
     }
 
     if (p === '/api/config' && method === 'GET') {
-      return send(res, 200, { siteTitle: config.siteTitle, sectors: config.sectors, aiEnabled: !!ai });
+      return send(res, 200, { siteTitle: config.siteTitle, sectors: config.sectors, aiEnabled: !!ai, app: getVersion() });
     }
 
     if (p === '/api/login' && method === 'POST') {

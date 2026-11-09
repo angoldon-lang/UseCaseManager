@@ -3,13 +3,13 @@ import {
   Modal, IconButton, TextField, Toggle, PrimaryButton, DefaultButton, MessageBar, MessageBarType, MessageBarButton, Spinner, SpinnerSize
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { IUseCase } from '../../../models/UseCase';
-import { IAssetStore } from '../../../services/contracts';
+import { IUseCase } from '../models/UseCase';
+import { IAssetStore } from '../services/contracts';
 import {
   IPdfTexts, IPdfResult, renderPdf, defaultTexts, findIdentifyingReferences, anonymizeTexts, labelOfTextField,
   FIELD_SECTION, SECTION_LABELS, showClientLogo
-} from '../../../services/PdfService';
-import { downloadBlob } from '../../../utils/format';
+} from '../services/PdfService';
+import { downloadBlob } from '../utils/format';
 
 export interface IPdfDialogProps {
   uc: IUseCase;

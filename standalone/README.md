@@ -1,6 +1,6 @@
-# Archivio Use Case — versione standalone per Linux
+# Archivio Use Case — installazione e uso sul server Linux
 
-Stessa interfaccia, schede PDF ed export Excel della web part SharePoint, ma come applicazione autonoma: un server Node.js con database SQLite, accesso con utente e password e tre ruoli. Non richiede SharePoint né servizi esterni (anche le icone sono servite dal server).
+Applicazione autonoma: un server Node.js con database SQLite, accesso con utente e password e tre ruoli. Non richiede servizi esterni (anche le icone sono servite dal server).
 
 ## Requisiti
 - Linux con systemd (Debian/Ubuntu, RHEL/Rocky/Alma, SUSE…) oppure Docker.
@@ -9,8 +9,8 @@ Stessa interfaccia, schede PDF ed export Excel della web part SharePoint, ma com
 
 ## Installazione con pacchetto (systemd)
 ```bash
-tar xzf ad-usecase-archive-linux-v1.0.0.tar.gz
-cd ad-usecase-archive-linux-v1.0.0
+tar xzf ad-usecase-archive-latest.tar.gz
+cd ad-usecase-archive-linux-v*
 sudo ./install.sh
 ```
 Lo script crea l'utente di sistema `ucm`, installa in `/opt/ad-usecase-archive`, mette i dati in `/var/lib/ad-usecase-archive`, la configurazione in `/etc/ad-usecase-archive/ucm.env` e avvia il servizio `ad-usecase-archive`. È rieseguibile per aggiornare: configurazione e dati non vengono toccati.
@@ -78,14 +78,36 @@ Copia in modo coerente database e loghi anche a servizio attivo. Per ripristinar
 - **Concorrenza**: ogni caso ha una versione; se un altro utente salva prima di te compare l'avviso con le opzioni "Ricarica" o "Sovrascrivi con le mie modifiche".
 - **Sicurezza**: password con scrypt, sessioni di 12 ore su cookie `HttpOnly`/`SameSite=Strict`, intestazione anti-CSRF, Content-Security-Policy, blocco dopo 5 accessi falliti in 10 minuti, validazione lato server di tutti i campi.
 - **Campi del caso**: oltre ai campi iniziali ci sono il **Sales di riferimento** (facoltativo, solo uso interno: non compare nella scheda PDF) e il **fatturato del cliente a scaglioni** (Fino a 2 M€, 2–10, 10–50, 50–250, 250 M€–1 Mld€, Oltre 1 Mld€). I casi salvati con un importo vengono convertiti automaticamente nello scaglione corrispondente.
-- **Citabilità/PDF/Excel**: identici alla versione SharePoint; l'export Excel include sempre tutti i casi, ignorando i filtri.
+- **Citabilità/PDF/Excel**: l'export Excel include sempre tutti i casi, ignorando i filtri.
 
 ## Aggiornamento
-Scompatta il nuovo pacchetto ed esegui di nuovo `sudo ./install.sh`. Disinstallazione: `sudo /opt/ad-usecase-archive/uninstall.sh` (`--purge` per eliminare anche i dati).
+```bash
+sudo ucm-update
+```
+Scarica l'ultima versione, verifica l'integrità del pacchetto (sha256), fa un **backup** dei dati in `/var/backups/ad-usecase-archive/` (ne conserva gli ultimi 10), installa e controlla che il servizio risponda con la nuova versione. **Se qualcosa non va torna da solo alla versione precedente** e i dati non vengono toccati. Dati, utenti e configurazione restano sempre.
+
+| Comando | Cosa fa |
+|---|---|
+| `sudo ucm-update` | installa l'ultima versione disponibile |
+| `sudo ucm-update --check` | mostra versione installata e disponibile, senza installare |
+| `sudo ucm-update --file PACCHETTO.tar.gz` | usa un pacchetto copiato sul server (nessun accesso a GitHub) |
+| `sudo ucm-update --force` | reinstalla anche se la versione è la stessa o più vecchia |
+| `sudo ucm-update --branch RAMO` | legge l'aggiornamento da un altro ramo del repository |
+| `ucm version` | mostra la versione installata |
+
+La versione in uso è visibile anche **nell'app, in basso** (con data di build e un elenco delle novità).
+
+**Da dove si aggiorna**: l'origine è in `/etc/ad-usecase-archive/update.conf` (`REPO_URL` e `BRANCH`). Serve `git` sul server e l'accesso a GitHub. Se il repository è **privato** crea un token GitHub in sola lettura sul repository e scrivilo in `update.conf` (`TOKEN="..."`) oppure lancia `sudo GITHUB_TOKEN=... ucm-update`. Senza accesso a GitHub scarica il pacchetto da un altro computer, copialo sul server e usa `--file`.
+
+Se per qualche motivo il comando `ucm-update` non è disponibile (installazione molto vecchia): estrai il nuovo tar e lancia `sudo ./install.sh`, che fa la stessa sostituzione senza backup automatico.
+
+**Con Docker**: `git pull`, poi `npm install && node standalone/build.js` e `docker compose -f standalone/docker-compose.yml up -d --build` (i dati stanno nel volume `ucm-data`).
 
 ## Compilare dai sorgenti
 ```bash
 npm install
-node standalone/build.js     # produce dist-standalone/ e release-standalone/ad-usecase-archive-linux-v<versione>.tar.gz
-npm run test:standalone      # test delle API del server (utenti, AI simulata, concorrenza…)
+npm run build                # produce dist-standalone/ e release-standalone/ad-usecase-archive-linux-v<versione>.tar.gz
+npm test                     # tipi, PDF/Excel e API del server (utenti, AI simulata, concorrenza…)
+npm run test:update          # installazione e aggiornamento simulati (con ritorno alla versione precedente)
+npm run release -- patch     # nuova versione: aggiorna deploy/ per ucm-update
 ```

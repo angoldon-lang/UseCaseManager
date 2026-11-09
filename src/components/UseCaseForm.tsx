@@ -4,15 +4,15 @@ import {
   MessageBar, MessageBarType, MessageBarButton, Spinner, SpinnerSize, Toggle
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { IUseCase, IUserPermissions, SERVIZI_AD, CaseStatus, FATTURATO_SCAGLIONI } from '../../../models/UseCase';
-import { IAssetStore, IAiAssistant } from '../../../services/contracts';
-import { ConflictError } from '../../../services/errors';
+import { IUseCase, IUserPermissions, SERVIZI_AD, CaseStatus, FATTURATO_SCAGLIONI } from '../models/UseCase';
+import { IAssetStore, IAiAssistant } from '../services/contracts';
+import { ConflictError } from '../services/errors';
 import { TagInput } from './TagInput';
 import { LogoPicker } from './LogoPicker';
 import { ConfirmDialog } from './ConfirmDialog';
-import { findDuplicatesOf } from '../../../utils/duplicates';
-import { validateBasic, validateComplete, missingRequiredLabels, defaultAnonymousName, FieldErrors } from '../../../utils/validation';
-import { formatDateTime, parseNumber, uniqueSorted } from '../../../utils/format';
+import { findDuplicatesOf } from '../utils/duplicates';
+import { validateBasic, validateComplete, missingRequiredLabels, defaultAnonymousName, FieldErrors } from '../utils/validation';
+import { formatDateTime, parseNumber, uniqueSorted } from '../utils/format';
 
 export interface ILogoChange {
   pending: string | null;

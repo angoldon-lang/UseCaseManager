@@ -4,9 +4,9 @@ import {
   DefaultButton
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { IUseCase, IUserPermissions, SERVIZI_AD } from '../../../models/UseCase';
-import { duplicateKey, findDuplicateGroups } from '../../../utils/duplicates';
-import { formatDateTime, normalize, uniqueSorted } from '../../../utils/format';
+import { IUseCase, IUserPermissions, SERVIZI_AD } from '../models/UseCase';
+import { duplicateKey, findDuplicateGroups } from '../utils/duplicates';
+import { formatDateTime, normalize, uniqueSorted } from '../utils/format';
 
 export interface IFilters {
   search: string;

@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { DefaultButton, Checkbox, Label } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { IAssetStore } from '../../../services/contracts';
-import { processLogoFile } from '../../../utils/image';
+import { IAssetStore } from '../services/contracts';
+import { processLogoFile } from '../utils/image';
 
 export interface ILogoPickerProps {
   label: string;

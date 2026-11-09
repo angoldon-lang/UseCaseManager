@@ -9,6 +9,7 @@ const auth = require('./auth');
 
 const dataDir = path.resolve(process.env.UCM_DATA_DIR || path.join(process.cwd(), 'data'));
 const [cmd, ...args] = process.argv.slice(2);
+const { getVersion } = require('./version');
 
 function usage() {
   console.log(`Uso: ucm <comando>
@@ -21,6 +22,7 @@ function usage() {
   trash:list                 elenca i casi eliminati
   trash:restore <id>         ripristina un caso eliminato
   backup <cartella>          copia database e loghi in <cartella>
+  version                    mostra la versione installata
 
 Variabile: UCM_DATA_DIR (predefinita ./data). Attuale: ${dataDir}`);
 }
@@ -39,6 +41,11 @@ function askPassword(prompt) {
 (async () => {
   if (!cmd || cmd === '-h' || cmd === '--help') {
     return usage();
+  }
+  if (cmd === 'version') {
+    const v = getVersion();
+    console.log('Archivio Use Case v' + v.version + (v.build ? ' (build ' + v.build + (v.commit ? ', ' + v.commit : '') + ')' : ''));
+    return;
   }
   const db = openDatabase(dataDir);
   const need = (n) => { if (args.length < n) { usage(); process.exit(2); } };
@@ -107,6 +114,11 @@ function askPassword(prompt) {
       db.prepare('UPDATE cases SET deleted = 0, deleted_at = NULL WHERE id = ?').run(Number(args[0]));
       console.log('Ripristinato (se presente).');
       break;
+    case 'version': {
+      const v = getVersion();
+      console.log('Archivio Use Case v' + v.version + (v.build ? ' (build ' + v.build + (v.commit ? ', ' + v.commit : '') + ')' : ''));
+      break;
+    }
     case 'backup': {
       need(1);
       const dest = path.resolve(args[0]);

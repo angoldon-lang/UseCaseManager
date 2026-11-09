@@ -1,46 +1,45 @@
-# Archivio Use Case — AD Consulting (SPFx)
+# Archivio Use Case — AD Consulting
 
-Web part SharePoint Framework 1.21.1 (React 17, TypeScript, Fluent UI v8) per raccogliere i casi progettuali, generare la scheda PDF (con anonimizzazione dei clienti non citabili) ed esportare tutto in Excel.
+Applicazione web interna per raccogliere i casi progettuali, consultarli, generare la scheda PDF (con anonimizzazione dei clienti non citabili) ed esportare tutto in Excel. Gira su un **server Linux**: Node.js + database SQLite, accesso con utente e password e ruoli (lettura, editor, amministratore).
 
-- Dati: lista SharePoint **Use Cases**; loghi: libreria **Use Case Assets**; nomi configurabili nelle proprietà della web part.
-- PDF: [pdfmake](http://pdfmake.org) (testo selezionabile, A4, immagini incorporate, anteprima, testi modificabili al volo, segnalazione sezioni oltre una pagina).
-- Excel: [ExcelJS](https://github.com/exceljs/exceljs) (.xlsx nativo con intestazioni evidenziate, riga bloccata, wrap text, testi forzati a stringa).
-- Concorrenza ottimistica con `odata.etag` / `If-Match`.
+## Guide
+- **[Installazione, utenti, AI, backup](standalone/README.md)** — come installare e usare l'applicazione sul server.
+- **[Aggiornamento](#aggiornamento)** — `sudo ucm-update`.
+- [Novità per versione](CHANGELOG.md).
 
-## Due modi di usarlo
-| | Web part SharePoint | **Standalone Linux** |
-|---|---|---|
-| Pacchetto | `deploy/ad-usecase-archive.sppkg` | `deploy/ad-usecase-archive-linux-v1.0.0.tar.gz` |
-| Dati | lista SharePoint + libreria | SQLite + file sul server |
-| Accesso | account Microsoft 365 | utenti locali (admin / editor / reader) |
-| Guida | [docs/GUIDA-AMMINISTRATORE.md](docs/GUIDA-AMMINISTRATORE.md) | [standalone/README.md](standalone/README.md) |
+## Aggiornamento
+Sul server, per portare l'applicazione all'ultima versione:
+```bash
+sudo ucm-update
+```
+Il comando scarica l'ultima versione, verifica il pacchetto, fa un **backup dei dati**, installa, controlla che il servizio risponda con la nuova versione e, se qualcosa non va, **torna da solo alla versione precedente**. Altre opzioni: `--check` (mostra versione installata e disponibile senza installare), `--file PACCHETTO.tar.gz` (usa un pacchetto copiato a mano), `--force`.
+La versione in uso si vede in basso nell'app («v2.0.0 · build 09/11/2026 · commit») e con `ucm version` da terminale.
 
-Nella versione standalone gli amministratori creano gli utenti dalla pagina web e i testi dei casi possono essere elaborati con l'AI (Claude) a partire da appunti; su SharePoint queste due funzioni non ci sono.
-
-La stessa interfaccia, le stesse schede PDF e lo stesso export Excel sono condivisi: i componenti React dipendono solo dai contratti in `src/services/contracts.ts`, implementati da `SharePointBackend` e da `standalone/web/HttpBackend.ts`.
+## Pubblicare una nuova versione (per chi sviluppa)
+```bash
+npm install                 # una tantum
+npm run release -- patch    # oppure minor / major / 2.1.0
+```
+Aumenta la versione, aggiunge il titolo in `CHANGELOG.md` (da completare con le novità), esegue i test, compila e mette il pacchetto in `deploy/ad-usecase-archive-latest.tar.gz`. Poi `git add -A && git commit && git push`: il server si aggiorna con `sudo ucm-update`.
 
 ## Struttura
 ```
-src/
-  models/UseCase.ts                 modello, servizi AD, settori
-  services/                         SpClient, UseCaseService (REST + etag + paginazione), AssetService,
-                                    ProvisioningService, PdfService, ExcelService
-  utils/                            formattazione, validazione, duplicati, elaborazione immagini
-  webparts/useCaseArchive/          web part, manifest, loc, components (tabella, form, PDF, impostazioni)
-config/                             configurazione SPFx e package-solution
-provision/Provision-UseCaseArchive.ps1   provisioning PnP PowerShell
-deploy/ad-usecase-archive.sppkg     pacchetto pronto per l'App Catalog
-docs/GUIDA-AMMINISTRATORE.md        guida passo-passo
-scripts/test-logic.js               test di PDF/Excel/duplicati/anonimizzazione (npm run test:logic)
-standalone/                         versione per Linux: server Node.js + SQLite, web app, installer systemd, Dockerfile
-                                    (node standalone/build.js; npm run test:standalone)
+src/components/      interfaccia (tabella, form, PDF, impostazioni, tema con i colori AD)
+src/models, utils/   modello dati, validazione, duplicati, formattazione
+src/services/        generazione PDF (pdfmake), export Excel (ExcelJS), contratti verso il server
+standalone/server/   server Node.js (API REST, SQLite, utenti, AI con SDK Anthropic) e comando ucm
+standalone/web/      avvio dell'app nel browser, login, gestione utenti, versione
+standalone/install/  installer systemd, ucm-update, esempi di configurazione
+standalone/test/     test del server e dell'aggiornamento
+scripts/             test di PDF/Excel e script di rilascio
+deploy/              pacchetto pronto per l'installazione e per ucm-update
 ```
 
-## Comandi
+## Sviluppo
 ```bash
 npm install
-npx gulp serve                       # workbench (https://<tenant>/_layouts/workbench.aspx)
-npx gulp clean && npx gulp bundle --ship && npx gulp package-solution --ship
-npm run test:logic
+npm test                    # tipi, logica PDF/Excel, API del server
+npm run test:update         # simulazione di installazione e aggiornamento (circa 1 minuto)
+npm run build               # dist-standalone/ e release-standalone/*.tar.gz
 ```
-Vedi la [guida per l'amministratore](docs/GUIDA-AMMINISTRATORE.md) per il deploy.
+Requisiti: Node.js ≥ 22.13.

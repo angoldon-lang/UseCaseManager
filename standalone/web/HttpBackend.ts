@@ -13,10 +13,17 @@ export interface IMe {
   canManageSettings: boolean;
 }
 
+export interface IAppVersion {
+  version: string;
+  build: string;
+  commit: string;
+}
+
 export interface IAppConfig {
   siteTitle: string;
   sectors: string[];
   aiEnabled: boolean;
+  app?: IAppVersion;
 }
 
 export class HttpClient {

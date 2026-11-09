@@ -3,12 +3,12 @@ import {
   PrimaryButton, DefaultButton, MessageBar, MessageBarType, Spinner, SpinnerSize, ThemeProvider
 } from '@fluentui/react';
 import { brandTheme } from './brandTheme';
-import { DEFAULT_AD_LOGO } from '../../../assets/adLogo';
+import { DEFAULT_AD_LOGO } from '../assets/adLogo';
 import styles from './UseCaseArchive.module.scss';
-import { IUseCase, IUserPermissions, IWebPartSettings, emptyUseCase } from '../../../models/UseCase';
-import { AppError } from '../../../services/errors';
-import { IBackend } from '../../../services/contracts';
-import { exportToExcel } from '../../../services/ExcelService';
+import { IUseCase, IUserPermissions, IAppSettings, emptyUseCase } from '../models/UseCase';
+import { AppError } from '../services/errors';
+import { IBackend } from '../services/contracts';
+import { exportToExcel } from '../services/ExcelService';
 import { UseCaseTable, FilterBar, StatTiles, IFilters, EMPTY_FILTERS } from './UseCaseTable';
 import { UseCaseForm, ILogoChange } from './UseCaseForm';
 import { PdfDialog } from './PdfDialog';
@@ -18,7 +18,7 @@ import { Notifications, INotification } from './Notifications';
 
 export interface IUseCaseArchiveProps {
   backend: IBackend;
-  settings: IWebPartSettings;
+  settings: IAppSettings;
   /** Contenuto aggiuntivo nella barra in alto (es. utente connesso e logout nella versione standalone). */
   headerExtra?: React.ReactNode;
 }
@@ -221,15 +221,8 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
       <div className={styles.setupBox}>
         <MessageBar messageBarType={MessageBarType.error} isMultiline={true}>
           {loadError.message}
-          {loadError.status === 404 && backend.provisioning && (
-            <div style={{ marginTop: 6 }}>
-              La lista "{settings.listTitle}", la libreria "{settings.assetsLibraryTitle}" o alcune colonne mancano in questo sito. Se hai il permesso
-              "Gestisci liste" puoi crearle o aggiornarle dalle Impostazioni; in alternativa usa lo script di provisioning fornito.
-            </div>
-          )}
         </MessageBar>
         <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-          <PrimaryButton text="Apri impostazioni" iconProps={{ iconName: 'Settings' }} onClick={function () { setShowSettings(true); }} />
           <DefaultButton text="Riprova" onClick={function () { setLoading(true); refresh().then(function () { setLoading(false); }); }} />
         </div>
       </div>
@@ -301,7 +294,6 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
           adLogo={adLogo}
           defaultLogo={DEFAULT_AD_LOGO}
           onAdLogoChanged={setAdLogo}
-          onProvisioned={function () { setLoading(true); refresh().then(function () { setLoading(false); }); }}
           notify={notify}
           onDismiss={function () { setShowSettings(false); }}
         />

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TextField, PrimaryButton, MessageBar, MessageBarType, Spinner, SpinnerSize, ThemeProvider } from '@fluentui/react';
 import { HttpClient, IMe } from './HttpBackend';
-import { brandTheme } from '../../src/webparts/useCaseArchive/components/brandTheme';
+import { brandTheme } from '../../src/components/brandTheme';
 import { DEFAULT_AD_LOGO } from '../../src/assets/adLogo';
 
 export const LoginScreen: React.FC<{ http: HttpClient; title: string; onLogin: (me: IMe) => void; expired: boolean }> = function (props) {

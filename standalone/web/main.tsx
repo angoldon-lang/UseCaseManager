@@ -1,11 +1,12 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { initializeIcons, Spinner, SpinnerSize } from '@fluentui/react';
-import UseCaseArchive from '../../src/webparts/useCaseArchive/components/UseCaseArchive';
+import UseCaseArchive from '../../src/components/UseCaseArchive';
 import { DEFAULT_SECTORS } from '../../src/models/UseCase';
 import { HttpClient, IAppConfig, IMe, createHttpBackend } from './HttpBackend';
 import { LoginScreen } from './LoginScreen';
 import { AccountMenu } from './AccountMenu';
+import { VersionFooter } from './VersionFooter';
 
 // Icone servite dal server stesso (nessuna dipendenza da CDN esterne).
 initializeIcons('/fonts/');
@@ -32,14 +33,22 @@ const App: React.FC = function () {
     return <Spinner size={SpinnerSize.large} style={{ marginTop: '20vh' }} />;
   }
   if (!me || !backend) {
-    return <LoginScreen http={http} title={config.siteTitle} expired={expired} onLogin={function (m) { setExpired(false); setMe(m); }} />;
+    return (
+      <>
+        <LoginScreen http={http} title={config.siteTitle} expired={expired} onLogin={function (m) { setExpired(false); setMe(m); }} />
+        <VersionFooter version={config.app} title={config.siteTitle} />
+      </>
+    );
   }
   return (
+    <>
     <UseCaseArchive
       backend={backend}
-      settings={{ siteTitle: config.siteTitle, listTitle: '', assetsLibraryTitle: '', sectors: config.sectors }}
+      settings={{ siteTitle: config.siteTitle, sectors: config.sectors }}
       headerExtra={<AccountMenu http={http} me={me} onLogout={function () { setExpired(false); setMe(null); }} />}
     />
+    <VersionFooter version={config.app} title={config.siteTitle} />
+    </>
   );
 };
 
