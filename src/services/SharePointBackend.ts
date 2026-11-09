@@ -12,6 +12,7 @@ export function createSharePointBackend(http: SPHttpClient, webUrl: string, sett
     service: new UseCaseService(sp, settings.listTitle),
     assets: new AssetService(sp, settings.assetsLibraryTitle),
     provisioning: new ProvisioningService(sp, settings.listTitle, settings.assetsLibraryTitle),
+    aiUnavailableReason: 'L\'elaborazione con AI non è disponibile nella versione SharePoint: scrivi i testi a mano.',
     canManageSettings: true,
     storageDescription: 'Lista: ' + settings.listTitle + ' · Libreria: ' + settings.assetsLibraryTitle
   };

@@ -9,4 +9,4 @@ RUN mkdir -p /data && chown -R node:node /data
 USER node
 VOLUME /data
 EXPOSE 8080
-CMD ["node", "server/index.js"]
+CMD ["node", "server/main.js"]

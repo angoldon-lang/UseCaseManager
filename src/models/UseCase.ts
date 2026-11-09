@@ -30,6 +30,35 @@ export const DEFAULT_SECTORS: string[] = [
   'Altro'
 ];
 
+/** Scaglioni di fatturato del cliente (si salva la chiave, si mostra l'etichetta). */
+export interface IFatturatoScaglione {
+  key: string;
+  label: string;
+}
+
+export const FATTURATO_SCAGLIONI: IFatturatoScaglione[] = [
+  { key: '0-2M', label: 'Fino a 2 M€' },
+  { key: '2-10M', label: 'Da 2 a 10 M€' },
+  { key: '10-50M', label: 'Da 10 a 50 M€' },
+  { key: '50-250M', label: 'Da 50 a 250 M€' },
+  { key: '250M-1Mld', label: 'Da 250 M€ a 1 Mld€' },
+  { key: '>1Mld', label: 'Oltre 1 Mld€' }
+];
+
+export function fatturatoLabel(key: string | null | undefined): string {
+  const found = FATTURATO_SCAGLIONI.filter(function (s) { return s.key === key; })[0];
+  return found ? found.label : '';
+}
+
+/** Converte un importo (dati precedenti alla suddivisione in scaglioni) nel relativo scaglione. */
+export function scaglioneFromAmount(amount: number | null | undefined): string {
+  if (amount === null || amount === undefined || isNaN(amount) || amount < 0) {
+    return '';
+  }
+  const m = amount / 1000000;
+  return m < 2 ? '0-2M' : m < 10 ? '2-10M' : m < 50 ? '10-50M' : m < 250 ? '50-250M' : m < 1000 ? '250M-1Mld' : '>1Mld';
+}
+
 /** Un caso progettuale così come è conservato nella lista SharePoint. */
 export interface IUseCase {
   id?: number;
@@ -39,8 +68,11 @@ export interface IUseCase {
   // 1. Cliente
   cliente: string;
   settore: string;
-  fatturato: number | null;
+  /** Chiave dello scaglione di fatturato ('' = non indicato). */
+  fatturato: string;
   localizzazione: string;
+  /** Sales di riferimento (facoltativo). */
+  salesRiferimento: string;
 
   // 2. Progetto
   nomeProgetto: string;
@@ -64,6 +96,11 @@ export interface IUseCase {
   benefici: string;
   kpi: string;
 
+  // Compilazione dei testi
+  /** true = i testi sono stati elaborati con l'AI a partire dagli appunti. */
+  compilazioneAI: boolean;
+  appuntiAI: string;
+
   // Stato e citabilità
   stato: CaseStatus;
   clienteCitabile: boolean;
@@ -84,8 +121,9 @@ export function emptyUseCase(): IUseCase {
   return {
     cliente: '',
     settore: '',
-    fatturato: null,
+    fatturato: '',
     localizzazione: '',
+    salesRiferimento: '',
     nomeProgetto: '',
     anno: new Date().getFullYear(),
     spesa: null,
@@ -98,6 +136,8 @@ export function emptyUseCase(): IUseCase {
     servizi: [],
     benefici: '',
     kpi: '',
+    compilazioneAI: false,
+    appuntiAI: '',
     stato: 'Bozza',
     clienteCitabile: false,
     denominazioneAnonima: '',

@@ -34,7 +34,7 @@ export interface IUseCaseTableProps {
 function searchHaystack(uc: IUseCase): string {
   return normalize([
     uc.cliente, uc.nomeProgetto, uc.sintesi, uc.esigenza, uc.soluzioneProposta, uc.soluzioneImplementata,
-    uc.benefici, uc.kpi, uc.localizzazione, uc.vendor.join(' '), uc.tecnologie.join(' '), uc.settore
+    uc.benefici, uc.kpi, uc.localizzazione, uc.salesRiferimento, uc.vendor.join(' '), uc.tecnologie.join(' '), uc.settore
   ].join(' '));
 }
 
@@ -215,6 +215,7 @@ export const UseCaseTable: React.FC<IUseCaseTableProps> = function (props) {
     }),
     sortable('nomeProgetto', 'Progetto', 160, { maxWidth: 260 }),
     sortable('settore', 'Settore', 110, { maxWidth: 160 }),
+    { key: 'sales', name: 'Sales', minWidth: 90, maxWidth: 140, isResizable: true, onRender: function (uc: IUseCase) { return uc.salesRiferimento; } },
     sortable('anno', 'Anno', 50, { maxWidth: 60 }),
     { key: 'vendor', name: 'Vendor', minWidth: 110, maxWidth: 180, isResizable: true, isMultiline: true, onRender: function (uc: IUseCase) { return uc.vendor.join(', '); } },
     { key: 'servizi', name: 'Servizi AD', minWidth: 140, maxWidth: 240, isResizable: true, isMultiline: true, onRender: function (uc: IUseCase) { return uc.servizi.join(', '); } },

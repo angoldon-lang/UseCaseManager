@@ -52,7 +52,10 @@ Excel e tabella mostrano solo ciò che l'utente può leggere (anche con permessi
 - **Excel**: una riga per caso, tutti i casi accessibili (bozze incluse, filtri ignorati, paginazione SharePoint gestita), valori multipli separati da `;`. Limite di Excel: 32.767 caratteri per cella.
 - **Aggiornamenti**: incrementa `version` in `config/package-solution.json`, ricompila e ricarica il `.sppkg` nell'App Catalog.
 
-## 8. Risoluzione problemi
+## 8. Aggiornamento da una versione precedente: nuove colonne
+La versione corrente aggiunge alla lista **Use Cases** le colonne *Fatturato cliente (scaglione)*, *Sales di riferimento*, *Testi elaborati con AI* e *Appunti per l'AI*. Dopo aver caricato il nuovo `.sppkg`, apri la web part: se compare il messaggio che la lista non contiene tutte le colonne, vai in **Impostazioni → Verifica / crea lista e libreria** (o riesegui lo script PnP) per aggiungerle. I fatturati inseriti in precedenza come importo vengono mostrati nel relativo scaglione. La gestione utenti da pagina e l'elaborazione AI dei testi esistono solo nella versione Linux standalone: su SharePoint gli utenti sono quelli di Microsoft 365 e i testi si scrivono a mano.
+
+## 9. Risoluzione problemi
 | Sintomo | Causa / rimedio |
 |---|---|
 | "Elemento, lista o libreria non trovati" | Lista/libreria mancanti o nome diverso nelle proprietà: usare §4. |

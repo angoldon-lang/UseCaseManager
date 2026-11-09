@@ -26,9 +26,6 @@ export const brandTheme: ITheme = createTheme({
     black: '#0f1720',
     white: '#ffffff'
   },
-  semanticColors: {
-    bodyBackground: 'transparent'
-  },
   defaultFontStyle: {
     fontFamily: "'Segoe UI', 'Segoe UI Web (West European)', system-ui, -apple-system, Roboto, 'Helvetica Neue', sans-serif"
   },

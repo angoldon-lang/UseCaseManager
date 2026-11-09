@@ -25,7 +25,7 @@ export const LoginScreen: React.FC<{ http: HttpClient; title: string; onLogin: (
   };
 
   return (
-    <ThemeProvider theme={brandTheme}>
+    <ThemeProvider theme={brandTheme} style={{ background: 'transparent' }}>
       <form
         onSubmit={submit}
         style={{

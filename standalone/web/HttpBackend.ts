@@ -1,4 +1,4 @@
-import { IBackend, IAssetStore, IUseCaseStore } from '../../src/services/contracts';
+import { IBackend, IAssetStore, IUseCaseStore, IAiAssistant, IAiInput, IAiDraft } from '../../src/services/contracts';
 import { AppError, ConflictError } from '../../src/services/errors';
 import { IUseCase, IUserPermissions } from '../../src/models/UseCase';
 import { dataUrlToBlob } from './dataUrl';
@@ -16,6 +16,7 @@ export interface IMe {
 export interface IAppConfig {
   siteTitle: string;
   sectors: string[];
+  aiEnabled: boolean;
 }
 
 export class HttpClient {
@@ -162,10 +163,25 @@ class HttpAssetStore implements IAssetStore {
   }
 }
 
-export function createHttpBackend(http: HttpClient, me: IMe): IBackend {
+class HttpAiAssistant implements IAiAssistant {
+  constructor(private http: HttpClient) {}
+
+  public describe(input: IAiInput): Promise<IAiDraft> {
+    return this.http.json<IAiDraft>('POST', '/api/ai/describe', input);
+  }
+}
+
+export function createHttpBackend(http: HttpClient, me: IMe, config: IAppConfig): IBackend {
+  const aiReady = config.aiEnabled && me.role !== 'reader';
   return {
     service: new HttpUseCaseStore(http, me),
     assets: new HttpAssetStore(http),
+    ai: aiReady ? new HttpAiAssistant(http) : undefined,
+    aiUnavailableReason: aiReady
+      ? undefined
+      : !config.aiEnabled
+        ? 'L\'elaborazione con AI non è attiva su questo server: l\'amministratore deve impostare UCM_ANTHROPIC_API_KEY.'
+        : 'Il tuo profilo è in sola lettura.',
     canManageSettings: me.canManageSettings,
     storageDescription: 'I dati sono salvati nel database del server'
   };

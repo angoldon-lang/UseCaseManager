@@ -1,12 +1,12 @@
 import { SpClient, escapeODataString } from './SpClient';
 import { AppError, ConflictError } from './errors';
 import { IUseCaseStore } from './contracts';
-import { IUseCase, IUserPermissions, CaseStatus } from '../models/UseCase';
+import { IUseCase, IUserPermissions, CaseStatus, scaglioneFromAmount } from '../models/UseCase';
 import { joinList, splitList } from '../utils/format';
 
 
 const SELECT = [
-  'Id', 'Title', 'Settore', 'FatturatoCliente', 'Localizzazione', 'NomeProgetto', 'AnnoProgetto', 'SpesaProgetto',
+  'Id', 'Title', 'Settore', 'FatturatoCliente', 'FatturatoScaglione', 'SalesRiferimento', 'CompilazioneAI', 'AppuntiAI', 'Localizzazione', 'NomeProgetto', 'AnnoProgetto', 'SpesaProgetto',
   'SintesiProgetto', 'Esigenza', 'SoluzioneProposta', 'SoluzioneImplementata', 'Vendor', 'Tecnologie', 'ServiziAD',
   'Benefici', 'KPI', 'StatoCaso', 'ClienteCitabile', 'DenominazioneAnonima', 'LogoClienteUrl', 'LogoUtilizzabile',
   'Created', 'Modified', 'Author/Title', 'Author/EMail', 'Editor/Title'
@@ -27,8 +27,12 @@ export class UseCaseService implements IUseCaseStore {
       etag: raw['odata.etag'],
       cliente: raw.Title || '',
       settore: raw.Settore || '',
-      fatturato: raw.FatturatoCliente === undefined ? null : raw.FatturatoCliente,
+      // I casi salvati prima degli scaglioni hanno solo l'importo: lo si converte nello scaglione corrispondente.
+      fatturato: raw.FatturatoScaglione || scaglioneFromAmount(raw.FatturatoCliente),
       localizzazione: raw.Localizzazione || '',
+      salesRiferimento: raw.SalesRiferimento || '',
+      compilazioneAI: !!raw.CompilazioneAI,
+      appuntiAI: raw.AppuntiAI || '',
       nomeProgetto: raw.NomeProgetto || '',
       anno: raw.AnnoProgetto === undefined ? null : raw.AnnoProgetto,
       spesa: raw.SpesaProgetto === undefined ? null : raw.SpesaProgetto,
@@ -58,7 +62,10 @@ export class UseCaseService implements IUseCaseStore {
     return {
       Title: (uc.cliente || '').trim() || '(Cliente non indicato)',
       Settore: uc.settore,
-      FatturatoCliente: uc.fatturato,
+      FatturatoScaglione: uc.fatturato,
+      SalesRiferimento: uc.salesRiferimento,
+      CompilazioneAI: uc.compilazioneAI,
+      AppuntiAI: uc.appuntiAI,
       Localizzazione: uc.localizzazione,
       NomeProgetto: uc.nomeProgetto,
       AnnoProgetto: uc.anno,
@@ -86,7 +93,18 @@ export class UseCaseService implements IUseCaseStore {
     let url: string | undefined = this.listUrl + '/items?$select=' + SELECT + '&$expand=Author,Editor&$orderby=Id desc&$top=500';
     let guard = 0;
     while (url && guard < 1000) {
-      const page: any = await this.sp.getJson<any>(url);
+      let page: any;
+      try {
+        page = await this.sp.getJson<any>(url);
+      } catch (e) {
+        if (e instanceof AppError && e.status === 400 && /does not exist|non esiste/i.test(e.code)) {
+          throw new AppError(
+            'La lista non contiene tutte le colonne richieste dalla versione corrente. Apri Impostazioni → "Verifica / crea lista e libreria" per aggiungerle.',
+            404
+          );
+        }
+        throw e;
+      }
       (page.value || []).forEach(function (raw: any) { result.push(UseCaseService.fromRaw(raw)); });
       url = page['odata.nextLink'] || page['@odata.nextLink'];
       guard++;

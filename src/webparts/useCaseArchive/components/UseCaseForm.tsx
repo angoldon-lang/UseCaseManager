@@ -4,8 +4,8 @@ import {
   MessageBar, MessageBarType, MessageBarButton, Spinner, SpinnerSize, Toggle
 } from '@fluentui/react';
 import styles from './UseCaseArchive.module.scss';
-import { IUseCase, IUserPermissions, SERVIZI_AD, CaseStatus } from '../../../models/UseCase';
-import { IAssetStore } from '../../../services/contracts';
+import { IUseCase, IUserPermissions, SERVIZI_AD, CaseStatus, FATTURATO_SCAGLIONI } from '../../../models/UseCase';
+import { IAssetStore, IAiAssistant } from '../../../services/contracts';
 import { ConflictError } from '../../../services/errors';
 import { TagInput } from './TagInput';
 import { LogoPicker } from './LogoPicker';
@@ -25,6 +25,9 @@ export interface IUseCaseFormProps {
   sectors: string[];
   allItems: IUseCase[];
   assets: IAssetStore;
+  /** Elaborazione AI dei testi (assente se non disponibile). */
+  ai?: IAiAssistant;
+  aiUnavailableReason?: string;
   permissions: IUserPermissions;
   onSave: (uc: IUseCase, logo: ILogoChange, force: boolean) => Promise<IUseCase>;
   onClose: () => void;
@@ -55,7 +58,6 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
   const [draft, setDraft] = React.useState<IUseCase>(props.initial);
   const [initialJson, setInitialJson] = React.useState<string>(JSON.stringify(props.initial));
   const [numText, setNumText] = React.useState({
-    fatturato: numToText(props.initial.fatturato),
     spesa: numToText(props.initial.spesa),
     anno: numToText(props.initial.anno)
   });
@@ -65,6 +67,9 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
   const [conflict, setConflict] = React.useState<ConflictError | null>(null);
   const [confirmClose, setConfirmClose] = React.useState(false);
   const [completeMissing, setCompleteMissing] = React.useState<string[]>([]);
+  const [generating, setGenerating] = React.useState(false);
+  const [aiNotice, setAiNotice] = React.useState(false);
+  const [confirmOverwrite, setConfirmOverwrite] = React.useState(false);
 
   const mounted = React.useRef(true);
   React.useEffect(function () { return function () { mounted.current = false; }; }, []);
@@ -94,7 +99,7 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
   };
 
   const text = function (
-    field: 'cliente' | 'localizzazione' | 'nomeProgetto' | 'sintesi' | 'esigenza' | 'soluzioneProposta' | 'soluzioneImplementata' | 'benefici' | 'kpi' | 'denominazioneAnonima',
+    field: 'cliente' | 'localizzazione' | 'salesRiferimento' | 'nomeProgetto' | 'sintesi' | 'esigenza' | 'soluzioneProposta' | 'soluzioneImplementata' | 'benefici' | 'kpi' | 'denominazioneAnonima',
     label: string,
     opts?: { multiline?: boolean; rows?: number; required?: boolean; full?: boolean; placeholder?: string; description?: string }
   ): JSX.Element {
@@ -157,7 +162,7 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
       }
       setDraft(saved);
       setInitialJson(JSON.stringify(saved));
-      setNumText({ fatturato: numToText(saved.fatturato), spesa: numToText(saved.spesa), anno: numToText(saved.anno) });
+      setNumText({ spesa: numToText(saved.spesa), anno: numToText(saved.anno) });
       setLogo(NO_LOGO_CHANGE);
       setConflict(null);
       props.notify(MessageBarType.success, 'Caso "' + (saved.nomeProgetto || saved.cliente) + '" salvato correttamente.');
@@ -182,6 +187,63 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
       setConfirmClose(true);
     } else {
       props.onClose();
+    }
+  };
+
+  const TEXT_FIELDS: Array<'sintesi' | 'esigenza' | 'soluzioneProposta' | 'soluzioneImplementata' | 'benefici' | 'kpi'> = [
+    'sintesi', 'esigenza', 'soluzioneProposta', 'soluzioneImplementata', 'benefici', 'kpi'
+  ];
+
+  const runGenerate = async function (): Promise<void> {
+    if (!props.ai) {
+      return;
+    }
+    setGenerating(true);
+    try {
+      const out = await props.ai.describe({
+        appunti: draft.appuntiAI,
+        nomeProgetto: draft.nomeProgetto,
+        settore: draft.settore,
+        anno: draft.anno,
+        vendor: draft.vendor,
+        tecnologie: draft.tecnologie,
+        servizi: draft.servizi
+      });
+      if (!mounted.current) {
+        return;
+      }
+      // I campi che l'AI lascia vuoti (es. KPI non presenti negli appunti) non cancellano quanto già scritto.
+      setDraft(function (d) {
+        const n = Object.assign({}, d);
+        TEXT_FIELDS.forEach(function (f) { if (out[f] && out[f].trim()) { n[f] = out[f].trim(); } });
+        return n;
+      });
+      setErrors(function (e) {
+        const n = Object.assign({}, e);
+        TEXT_FIELDS.forEach(function (f) { delete n[f]; });
+        return n;
+      });
+      setAiNotice(true);
+      props.notify(MessageBarType.success, 'Descrizione elaborata: controlla e modifica i testi prima di salvare.');
+    } catch (e) {
+      props.notify(MessageBarType.error, (e as Error).message || 'Elaborazione AI non riuscita.');
+    } finally {
+      if (mounted.current) {
+        setGenerating(false);
+      }
+    }
+  };
+
+  const onGenerateClick = function (): void {
+    if ((draft.appuntiAI || '').trim().length < 20) {
+      setErrors(function (e) { return Object.assign({}, e, { appuntiAI: 'Scrivi qualche appunto in più (almeno 20 caratteri) perché l\'AI possa elaborare la descrizione.' }); });
+      return;
+    }
+    const filled = TEXT_FIELDS.some(function (f) { return (draft[f] || '').trim().length > 0; });
+    if (filled) {
+      setConfirmOverwrite(true);
+    } else {
+      runGenerate();
     }
   };
 
@@ -235,6 +297,64 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
         </MessageBar>
       )}
 
+      <section className={styles.section} aria-labelledby="sec-mode">
+        <h3 className={styles.sectionTitle} id="sec-mode">
+          <span className={styles.sectionNumber} style={{ background: 'linear-gradient(135deg, #db0b5b, #a8084a)' }}>AI</span>
+          Modalità di compilazione dei testi
+        </h3>
+        <div className={styles.sectionBody}>
+          <div className={styles.full}>
+            <ChoiceGroup
+              selectedKey={draft.compilazioneAI ? 'ai' : 'manuale'}
+              disabled={ro}
+              options={[
+                { key: 'manuale', text: 'Scrivo tutto a mano' },
+                { key: 'ai', text: 'Elabora la descrizione dettagliata con l\'AI', disabled: !props.ai }
+              ]}
+              onChange={function (_, o) { if (o) { set('compilazioneAI', o.key === 'ai'); } }}
+              styles={{ flexContainer: { display: 'flex', gap: 28, flexWrap: 'wrap' } }}
+            />
+            {!props.ai && props.aiUnavailableReason && <div className={styles.hint}>{props.aiUnavailableReason}</div>}
+          </div>
+          {draft.compilazioneAI && (
+            <div className={styles.full}>
+              <TextField
+                label="Appunti sul caso"
+                multiline={true}
+                rows={5}
+                autoAdjustHeight={true}
+                resizable={false}
+                value={draft.appuntiAI}
+                readOnly={ro}
+                errorMessage={errors.appuntiAI}
+                placeholder="Es.: il cliente aveva una rete obsoleta e frequenti fermi; abbiamo fatto assessment e progettato una rete campus con 220 access point; migrazione di notte senza fermi produzione; dopo il go-live -60% di ticket di rete."
+                description="Scrivi a punti cosa chiedeva il cliente, cosa è stato fatto e i risultati. L'AI userà solo queste informazioni (senza inventare dati)."
+                onChange={function (_, v) { set('appuntiAI', v || ''); }}
+              />
+              {!ro && (
+                <div style={{ marginTop: 10, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                  <PrimaryButton
+                    iconProps={{ iconName: 'Sparkle' }}
+                    text={generating ? 'Elaborazione in corso…' : 'Elabora descrizione con AI'}
+                    disabled={generating || !props.ai}
+                    onClick={onGenerateClick}
+                  />
+                  {generating && <Spinner size={SpinnerSize.small} />}
+                  <span className={styles.hint}>
+                    Vengono inviati al servizio AI gli appunti, il nome del progetto, il settore, l'anno, vendor, tecnologie e servizi: mai il nome del cliente.
+                  </span>
+                </div>
+              )}
+              {aiNotice && (
+                <MessageBar messageBarType={MessageBarType.info} onDismiss={function () { setAiNotice(false); }} styles={{ root: { marginTop: 10 } }}>
+                  I testi qui sotto sono stati elaborati dall'AI: verificali e correggili prima di salvare. Restano modificabili a mano.
+                </MessageBar>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
       <Section n={1} title="Cliente">
         {text('cliente', 'Cliente / Ragione sociale', { required: true })}
         <Dropdown
@@ -247,17 +367,17 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
           errorMessage={errors.settore}
           onChange={function (_, o) { if (o) { set('settore', String(o.key)); } }}
         />
-        <TextField
-          label="Fatturato cliente (€)"
-          prefix="€"
-          inputMode="decimal"
-          value={numText.fatturato}
-          readOnly={ro}
-          description="Facoltativo"
-          errorMessage={errors.fatturato || (numText.fatturato && parseNumber(numText.fatturato) === null ? 'Inserisci un importo numerico.' : undefined)}
-          onChange={function (_, v) { setNumText(Object.assign({}, numText, { fatturato: v || '' })); set('fatturato', parseNumber(v || '')); }}
+        <Dropdown
+          label="Fatturato cliente (scaglione)"
+          selectedKey={draft.fatturato || ''}
+          options={[{ key: '', text: 'Non indicato' } as IDropdownOption].concat(
+            FATTURATO_SCAGLIONI.map(function (s) { return { key: s.key, text: s.label }; })
+          )}
+          disabled={ro}
+          onChange={function (_, o) { if (o) { set('fatturato', String(o.key)); } }}
         />
         {text('localizzazione', 'Localizzazione geografica')}
+        {text('salesRiferimento', 'Sales di riferimento', { description: 'Facoltativo: il commerciale AD che segue il cliente.' })}
       </Section>
 
       <Section n={2} title="Progetto">
@@ -389,6 +509,16 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
         )}
       </div>
 
+      {confirmOverwrite && (
+        <ConfirmDialog
+          title="Sostituire i testi esistenti?"
+          message="Alcuni testi (sintesi, esigenza, soluzione, benefici, KPI) sono già compilati: l'elaborazione AI li sostituirà con la nuova descrizione. I campi che l'AI lascia vuoti non vengono toccati."
+          confirmText="Sostituisci con l'AI"
+          onConfirm={function () { setConfirmOverwrite(false); runGenerate(); }}
+          onCancel={function () { setConfirmOverwrite(false); }}
+        />
+      )}
+
       {confirmClose && (
         <ConfirmDialog
           title="Modifiche non salvate"
@@ -423,7 +553,7 @@ export const UseCaseForm: React.FC<IUseCaseFormProps> = function (props) {
             if (latest) {
               setDraft(latest);
               setInitialJson(JSON.stringify(latest));
-              setNumText({ fatturato: numToText(latest.fatturato), spesa: numToText(latest.spesa), anno: numToText(latest.anno) });
+              setNumText({ spesa: numToText(latest.spesa), anno: numToText(latest.anno) });
               setLogo(NO_LOGO_CHANGE);
               props.notify(MessageBarType.info, 'Caricata la versione più recente del caso.');
             } else {

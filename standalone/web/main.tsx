@@ -11,7 +11,7 @@ import { AccountMenu } from './AccountMenu';
 initializeIcons('/fonts/');
 
 const App: React.FC = function () {
-  const [config, setConfig] = React.useState<IAppConfig>({ siteTitle: 'Archivio Use Case', sectors: DEFAULT_SECTORS });
+  const [config, setConfig] = React.useState<IAppConfig>({ siteTitle: 'Archivio Use Case', sectors: DEFAULT_SECTORS, aiEnabled: false });
   const [me, setMe] = React.useState<IMe | null | undefined>(undefined);
   const [expired, setExpired] = React.useState(false);
 
@@ -24,7 +24,7 @@ const App: React.FC = function () {
     http.json<IMe>('GET', '/api/me').then(setMe).catch(function () { setMe(null); });
   }, [http]);
 
-  const backend = React.useMemo(function () { return me ? createHttpBackend(http, me) : null; }, [http, me]);
+  const backend = React.useMemo(function () { return me ? createHttpBackend(http, me, config) : null; }, [http, me, config]);
 
   document.title = config.siteTitle;
 

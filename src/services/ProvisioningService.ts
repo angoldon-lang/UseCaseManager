@@ -28,7 +28,9 @@ const bool = (name: string, title: string): IFieldDef => ({
 /** Definizione delle colonne della lista "Use Cases" (la colonna Title contiene il Cliente). */
 export const LIST_FIELDS: IFieldDef[] = [
   text('Settore', 'Settore'),
-  num('FatturatoCliente', 'Fatturato cliente (€)', 2),
+  num('FatturatoCliente', 'Fatturato cliente (€) - dato precedente', 2),
+  text('FatturatoScaglione', 'Fatturato cliente (scaglione)'),
+  text('SalesRiferimento', 'Sales di riferimento'),
   text('Localizzazione', 'Localizzazione geografica'),
   text('NomeProgetto', 'Nome progetto'),
   num('AnnoProgetto', 'Anno progetto', 0),
@@ -42,6 +44,8 @@ export const LIST_FIELDS: IFieldDef[] = [
   note('ServiziAD', 'Servizi AD (separati da ;)'),
   note('Benefici', 'Benefici ottenuti'),
   note('KPI', 'KPI / Risultati misurabili'),
+  bool('CompilazioneAI', 'Testi elaborati con AI'),
+  note('AppuntiAI', 'Appunti per l\'AI'),
   {
     name: 'StatoCaso',
     title: 'Stato del caso',

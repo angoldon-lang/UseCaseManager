@@ -3,11 +3,22 @@
 const TEXT_MAX = 50000;
 const ASSET_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/;
 
+const FATTURATO_KEYS = ['0-2M', '2-10M', '10-50M', '50-250M', '250M-1Mld', '>1Mld'];
+
+/** Converte un importo (dati precedenti agli scaglioni) nello scaglione corrispondente. */
+function bandFromAmount(amount) {
+  if (typeof amount !== 'number' || !isFinite(amount) || amount < 0) {
+    return '';
+  }
+  const m = amount / 1000000;
+  return m < 2 ? '0-2M' : m < 10 ? '2-10M' : m < 50 ? '10-50M' : m < 250 ? '50-250M' : m < 1000 ? '250M-1Mld' : '>1Mld';
+}
+
 const STRING_FIELDS = [
-  'cliente', 'settore', 'localizzazione', 'nomeProgetto', 'sintesi', 'esigenza', 'soluzioneProposta',
+  'cliente', 'settore', 'localizzazione', 'salesRiferimento', 'appuntiAI', 'nomeProgetto', 'sintesi', 'esigenza', 'soluzioneProposta',
   'soluzioneImplementata', 'benefici', 'kpi', 'denominazioneAnonima'
 ];
-const NUMBER_FIELDS = ['fatturato', 'spesa', 'anno'];
+const NUMBER_FIELDS = ['spesa', 'anno'];
 const LIST_FIELDS = ['vendor', 'tecnologie', 'servizi'];
 
 class ValidationError extends Error {}
@@ -45,6 +56,17 @@ function sanitizeCase(body) {
   for (const f of LIST_FIELDS) {
     out[f] = cleanList(body[f] === undefined ? [] : body[f], f);
   }
+  const fat = body.fatturato;
+  if (fat === undefined || fat === null || fat === '') {
+    out.fatturato = '';
+  } else if (typeof fat === 'string' && FATTURATO_KEYS.includes(fat)) {
+    out.fatturato = fat;
+  } else if (typeof fat === 'number') {
+    out.fatturato = bandFromAmount(fat);
+  } else {
+    throw new ValidationError('Scaglione di fatturato non valido.');
+  }
+  out.compilazioneAI = body.compilazioneAI === true;
   out.stato = body.stato === 'Completo' ? 'Completo' : 'Bozza';
   out.clienteCitabile = body.clienteCitabile === true;
   out.logoUtilizzabile = body.logoUtilizzabile === true;
@@ -59,7 +81,7 @@ function sanitizeCase(body) {
   if (out.anno !== null && (out.anno < 1990 || out.anno > 2100)) {
     throw new ValidationError('Anno non valido.');
   }
-  if ((out.fatturato !== null && out.fatturato < 0) || (out.spesa !== null && out.spesa < 0)) {
+  if (out.spesa !== null && out.spesa < 0) {
     throw new ValidationError('Gli importi non possono essere negativi.');
   }
   return out;
@@ -69,4 +91,4 @@ function isPng(buffer) {
   return buffer.length > 8 && buffer.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
 }
 
-module.exports = { sanitizeCase, ValidationError, ASSET_NAME, isPng };
+module.exports = { sanitizeCase, bandFromAmount, FATTURATO_KEYS, ValidationError, ASSET_NAME, isPng };

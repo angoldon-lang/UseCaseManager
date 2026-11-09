@@ -122,7 +122,7 @@ export const PdfDialog: React.FC<IPdfDialogProps> = function (props) {
           {logoWarning && <MessageBar messageBarType={MessageBarType.warning}>{logoWarning}</MessageBar>}
 
           <Toggle label="Includi fatturato cliente" checked={includeFatturato} onText="Incluso" offText="Escluso (predefinito)"
-            disabled={uc.fatturato === null} onChange={function (_, c) { setIncludeFatturato(!!c); }} />
+            disabled={!uc.fatturato} onChange={function (_, c) { setIncludeFatturato(!!c); }} />
           <Toggle label="Includi spesa del progetto" checked={includeSpesa} onText="Inclusa" offText="Esclusa (predefinito)"
             disabled={uc.spesa === null} onChange={function (_, c) { setIncludeSpesa(!!c); }} />
 

@@ -29,7 +29,9 @@ if (-not (Get-PnPList -Identity $ListTitle -ErrorAction SilentlyContinue)) {
 # Nome interno, titolo visualizzato, tipo
 $fields = @(
   @('Settore', 'Settore', 'Text'),
-  @('FatturatoCliente', 'Fatturato cliente (€)', 'Number'),
+  @('FatturatoCliente', 'Fatturato cliente (€) - dato precedente', 'Number'),
+  @('FatturatoScaglione', 'Fatturato cliente (scaglione)', 'Text'),
+  @('SalesRiferimento', 'Sales di riferimento', 'Text'),
   @('Localizzazione', 'Localizzazione geografica', 'Text'),
   @('NomeProgetto', 'Nome progetto', 'Text'),
   @('AnnoProgetto', 'Anno progetto', 'Number'),
@@ -43,6 +45,8 @@ $fields = @(
   @('ServiziAD', 'Servizi AD (separati da ;)', 'Note'),
   @('Benefici', 'Benefici ottenuti', 'Note'),
   @('KPI', 'KPI / Risultati misurabili', 'Note'),
+  @('CompilazioneAI', 'Testi elaborati con AI', 'Boolean'),
+  @('AppuntiAI', 'Appunti per l''AI', 'Note'),
   @('StatoCaso', 'Stato del caso', 'Choice'),
   @('ClienteCitabile', 'Cliente citabile nella scheda', 'Boolean'),
   @('DenominazioneAnonima', 'Denominazione anonima', 'Text'),

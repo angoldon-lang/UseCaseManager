@@ -10,6 +10,7 @@ services:
     environment:
       UCM_SITE_TITLE: "Archivio Use Case"
       # UCM_ADMIN_PASSWORD: "cambia-questa-password"   # solo al primo avvio; altrimenti vedere "docker compose logs"
+      # UCM_ANTHROPIC_API_KEY: "sk-ant-..."                # abilita l'elaborazione AI dei testi
       # UCM_TRUST_PROXY: "1"                           # se dietro a un reverse proxy HTTPS
     volumes:
       - ucm-data:/data

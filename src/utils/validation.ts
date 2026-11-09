@@ -26,9 +26,6 @@ export function validateBasic(uc: IUseCase): FieldErrors {
   if (uc.anno !== null && (uc.anno < 1990 || uc.anno > 2100)) {
     errors.anno = 'Inserisci un anno compreso tra 1990 e 2100.';
   }
-  if (uc.fatturato !== null && uc.fatturato < 0) {
-    errors.fatturato = 'Il fatturato non può essere negativo.';
-  }
   if (uc.spesa !== null && uc.spesa < 0) {
     errors.spesa = 'La spesa non può essere negativa.';
   }

@@ -9,7 +9,8 @@ const path = require('path');
 const crypto = require('crypto');
 const { openDatabase } = require('./db');
 const auth = require('./auth');
-const { sanitizeCase, ValidationError, ASSET_NAME, isPng } = require('./validate');
+const { sanitizeCase, bandFromAmount, ValidationError, ASSET_NAME, isPng } = require('./validate');
+const { createAi, AiError } = require('./ai');
 
 const DEFAULT_SECTORS = [
   'Manifatturiero', 'Servizi finanziari', 'Sanità', 'Pubblica Amministrazione', 'Retail e GDO', 'Energia e Utilities',
@@ -46,7 +47,11 @@ function loadConfig(env = process.env) {
     sectors: sectors.length ? sectors : DEFAULT_SECTORS,
     trustProxy: env.UCM_TRUST_PROXY === '1',
     cookieSecure: env.UCM_COOKIE_SECURE === '1',
-    adminPassword: env.UCM_ADMIN_PASSWORD || ''
+    adminPassword: env.UCM_ADMIN_PASSWORD || '',
+    aiApiKey: env.UCM_ANTHROPIC_API_KEY || '',
+    aiModel: env.UCM_AI_MODEL || 'claude-opus-5-5',
+    aiBaseUrl: env.UCM_AI_BASE_URL || '',
+    aiHourlyLimit: Number(env.UCM_AI_HOURLY_LIMIT || 30)
   };
 }
 
@@ -55,7 +60,13 @@ function nowIso() {
 }
 
 function rowToCase(row) {
-  return Object.assign(JSON.parse(row.data), {
+  const data = JSON.parse(row.data);
+  // Retrocompatibilità con i casi salvati prima di scaglioni, sales e AI.
+  data.fatturato = typeof data.fatturato === 'number' ? bandFromAmount(data.fatturato) : data.fatturato || '';
+  data.salesRiferimento = data.salesRiferimento || '';
+  data.compilazioneAI = data.compilazioneAI === true;
+  data.appuntiAI = data.appuntiAI || '';
+  return Object.assign(data, {
     id: row.id,
     etag: '"' + row.version + '"',
     created: row.created,
@@ -110,6 +121,8 @@ async function readJson(req, limit = 2 * 1024 * 1024) {
 function createApp(config) {
   const db = openDatabase(config.dataDir);
   const throttle = auth.createThrottle();
+  const ai = createAi(config);
+  const aiUsage = new Map();
   const assetsDir = path.join(config.dataDir, 'assets');
 
   bootstrapAdmin(db, config);
@@ -177,7 +190,7 @@ function createApp(config) {
     }
 
     if (p === '/api/config' && method === 'GET') {
-      return send(res, 200, { siteTitle: config.siteTitle, sectors: config.sectors });
+      return send(res, 200, { siteTitle: config.siteTitle, sectors: config.sectors, aiEnabled: !!ai });
     }
 
     if (p === '/api/login' && method === 'POST') {
@@ -224,6 +237,38 @@ function createApp(config) {
       }
       db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(auth.hashPassword(body.next), user.id);
       return send(res, 200, { ok: true });
+    }
+
+    // ---- utenti (solo amministratori) ------------------------------------------------------------
+    if (p === '/api/users' || /^\/api\/users\/\d+$/.test(p)) {
+      if (user.role !== 'admin') {
+        throw new HttpError(403, 'Solo un amministratore può gestire gli utenti.');
+      }
+      return handleUsers(req, res, p, method, user);
+    }
+
+    // ---- AI ----------------------------------------------------------------------------------------
+    if (p === '/api/ai/describe' && method === 'POST') {
+      requireWriter(user);
+      if (!ai) {
+        throw new HttpError(503, 'L\'elaborazione con AI non è configurata su questo server (manca UCM_ANTHROPIC_API_KEY).');
+      }
+      const now = Date.now();
+      const recent = (aiUsage.get(user.id) || []).filter((t) => now - t < 3600 * 1000);
+      if (recent.length >= config.aiHourlyLimit) {
+        throw new HttpError(429, 'Hai raggiunto il limite di ' + config.aiHourlyLimit + ' elaborazioni AI all\'ora. Riprova più tardi.');
+      }
+      recent.push(now);
+      aiUsage.set(user.id, recent);
+      const body = await readJson(req, 100 * 1024);
+      try {
+        return send(res, 200, await ai.describe(body));
+      } catch (e) {
+        if (e instanceof AiError) {
+          throw new HttpError(e.status, e.message);
+        }
+        throw e;
+      }
     }
 
     // ---- casi -----------------------------------------------------------------------------------
@@ -306,6 +351,109 @@ function createApp(config) {
     }
 
     throw new HttpError(404, 'Risorsa non trovata.');
+  }
+
+  function userRow(u) {
+    return { id: u.id, username: u.username, displayName: u.display_name, email: u.email, role: u.role, disabled: !!u.disabled, created: u.created };
+  }
+
+  function activeAdmins(exceptId) {
+    return db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'admin' AND disabled = 0 AND id <> ?").get(exceptId || 0).n;
+  }
+
+  async function handleUsers(req, res, p, method, me) {
+    const ROLES = ['admin', 'editor', 'reader'];
+    if (p === '/api/users' && method === 'GET') {
+      return send(res, 200, db.prepare('SELECT * FROM users ORDER BY username COLLATE NOCASE').all().map(userRow));
+    }
+    if (p === '/api/users' && method === 'POST') {
+      const b = await readJson(req, 20 * 1024);
+      const username = String(b.username || '').trim();
+      const displayName = String(b.displayName || '').trim();
+      if (!/^[A-Za-z0-9._@-]{3,64}$/.test(username)) {
+        throw new HttpError(400, 'Nome utente non valido: 3-64 caratteri tra lettere, numeri, punto, trattino, underscore e @.');
+      }
+      if (!displayName || displayName.length > 120) {
+        throw new HttpError(400, 'Indica il nome visualizzato (max 120 caratteri).');
+      }
+      if (!ROLES.includes(b.role)) {
+        throw new HttpError(400, 'Ruolo non valido.');
+      }
+      const email = String(b.email || '').trim().slice(0, 200);
+      if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+        throw new HttpError(400, 'Indirizzo email non valido.');
+      }
+      const problem = auth.checkPasswordPolicy(b.password);
+      if (problem) {
+        throw new HttpError(400, problem);
+      }
+      if (db.prepare('SELECT 1 FROM users WHERE username = ?').get(username)) {
+        throw new HttpError(409, 'Esiste già un utente con questo nome.');
+      }
+      const info = db.prepare('INSERT INTO users (username, display_name, email, role, password_hash, created) VALUES (?, ?, ?, ?, ?, ?)')
+        .run(username, displayName, email, b.role, auth.hashPassword(b.password), nowIso());
+      return send(res, 201, userRow(db.prepare('SELECT * FROM users WHERE id = ?').get(Number(info.lastInsertRowid))));
+    }
+    const id = Number(p.split('/').pop());
+    const target = db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    if (!target) {
+      throw new HttpError(404, 'Utente non trovato.');
+    }
+    if (method === 'PATCH') {
+      const b = await readJson(req, 20 * 1024);
+      const nextRole = b.role === undefined ? target.role : b.role;
+      const nextDisabled = b.disabled === undefined ? !!target.disabled : b.disabled === true;
+      if (!ROLES.includes(nextRole)) {
+        throw new HttpError(400, 'Ruolo non valido.');
+      }
+      const losesAdmin = target.role === 'admin' && !target.disabled && (nextRole !== 'admin' || nextDisabled);
+      if (losesAdmin && activeAdmins(id) === 0) {
+        throw new HttpError(409, 'Deve restare almeno un amministratore attivo.');
+      }
+      if (target.id === me.id && (nextDisabled || nextRole !== target.role)) {
+        throw new HttpError(409, 'Non puoi disabilitare o cambiare il ruolo del tuo stesso utente.');
+      }
+      let displayName = target.display_name;
+      if (b.displayName !== undefined) {
+        displayName = String(b.displayName).trim();
+        if (!displayName || displayName.length > 120) {
+          throw new HttpError(400, 'Nome visualizzato non valido.');
+        }
+      }
+      let email = target.email;
+      if (b.email !== undefined) {
+        email = String(b.email).trim().slice(0, 200);
+        if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+          throw new HttpError(400, 'Indirizzo email non valido.');
+        }
+      }
+      db.prepare('UPDATE users SET display_name = ?, email = ?, role = ?, disabled = ? WHERE id = ?')
+        .run(displayName, email, nextRole, nextDisabled ? 1 : 0, id);
+      let closeSessions = nextDisabled || nextRole !== target.role;
+      if (b.password !== undefined) {
+        const problem = auth.checkPasswordPolicy(b.password);
+        if (problem) {
+          throw new HttpError(400, problem);
+        }
+        db.prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(auth.hashPassword(b.password), id);
+        closeSessions = true;
+      }
+      if (closeSessions && target.id !== me.id) {
+        db.prepare('DELETE FROM sessions WHERE user_id = ?').run(id);
+      }
+      return send(res, 200, userRow(db.prepare('SELECT * FROM users WHERE id = ?').get(id)));
+    }
+    if (method === 'DELETE') {
+      if (target.id === me.id) {
+        throw new HttpError(409, 'Non puoi eliminare il tuo stesso utente.');
+      }
+      if (target.role === 'admin' && !target.disabled && activeAdmins(id) === 0) {
+        throw new HttpError(409, 'Deve restare almeno un amministratore attivo.');
+      }
+      db.prepare('DELETE FROM users WHERE id = ?').run(id);
+      return send(res, 200, { ok: true });
+    }
+    throw new HttpError(405, 'Metodo non consentito.');
   }
 
   function serveStatic(req, res, url) {
@@ -395,17 +543,6 @@ function bootstrapAdmin(db, config) {
   console.log('   utente:   admin');
   console.log(generated ? '   password: ' + password + '   (cambiala al primo accesso)' : '   password: quella indicata in UCM_ADMIN_PASSWORD');
   console.log('==============================================================');
-}
-
-if (require.main === module) {
-  const config = loadConfig();
-  const { server } = createApp(config);
-  server.listen(config.port, config.host, () => {
-    console.log('Archivio Use Case in ascolto su http://' + config.host + ':' + config.port + ' (dati: ' + config.dataDir + ')');
-  });
-  const stop = () => server.close(() => process.exit(0));
-  process.on('SIGTERM', stop);
-  process.on('SIGINT', stop);
 }
 
 module.exports = { createApp, loadConfig };

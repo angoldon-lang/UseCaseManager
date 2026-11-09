@@ -1,4 +1,4 @@
-import { IUseCase } from '../models/UseCase';
+import { IUseCase, fatturatoLabel } from '../models/UseCase';
 import { downloadBlob } from '../utils/format';
 
 interface IColumn {
@@ -24,8 +24,9 @@ export const EXCEL_COLUMNS: IColumn[] = [
   { header: 'Logo cliente (percorso)', width: 34, kind: 'text', value: function (u) { return u.logoClienteUrl; } },
   { header: 'Logo utilizzabile nella scheda', width: 14, kind: 'text', value: function (u) { return u.logoClienteUrl ? (u.logoUtilizzabile ? 'Sì' : 'No') : ''; } },
   { header: 'Settore / Industry', width: 22, kind: 'text', value: function (u) { return u.settore; } },
-  { header: 'Fatturato cliente (€)', width: 18, kind: 'euro', value: function (u) { return u.fatturato; } },
+  { header: 'Fatturato cliente (scaglione)', width: 22, kind: 'text', value: function (u) { return fatturatoLabel(u.fatturato); } },
   { header: 'Localizzazione geografica', width: 22, kind: 'text', value: function (u) { return u.localizzazione; } },
+  { header: 'Sales di riferimento', width: 24, kind: 'text', value: function (u) { return u.salesRiferimento; } },
   { header: 'Nome progetto', width: 32, kind: 'text', value: function (u) { return u.nomeProgetto; } },
   { header: 'Anno progetto', width: 10, kind: 'year', value: function (u) { return u.anno; } },
   { header: 'Spesa complessiva progetto (€)', width: 20, kind: 'euro', value: function (u) { return u.spesa; } },
@@ -38,6 +39,8 @@ export const EXCEL_COLUMNS: IColumn[] = [
   { header: 'Servizi AD', width: 36, kind: 'text', value: function (u) { return u.servizi.join('; '); } },
   { header: 'Benefici ottenuti', width: 60, kind: 'text', value: function (u) { return u.benefici; } },
   { header: 'KPI / Risultati misurabili', width: 45, kind: 'text', value: function (u) { return u.kpi; } },
+  { header: 'Testi elaborati con AI', width: 14, kind: 'text', value: function (u) { return u.compilazioneAI ? 'Sì' : 'No'; } },
+  { header: 'Appunti per l\'AI', width: 45, kind: 'text', value: function (u) { return u.appuntiAI; } },
   { header: 'Stato', width: 11, kind: 'text', value: function (u) { return u.stato; } },
   { header: 'Autore', width: 22, kind: 'text', value: function (u) { return u.autore || ''; } },
   { header: 'Data di creazione', width: 17, kind: 'date', value: function (u) { return toDate(u.created); } },

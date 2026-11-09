@@ -15,6 +15,8 @@ Web part SharePoint Framework 1.21.1 (React 17, TypeScript, Fluent UI v8) per ra
 | Accesso | account Microsoft 365 | utenti locali (admin / editor / reader) |
 | Guida | [docs/GUIDA-AMMINISTRATORE.md](docs/GUIDA-AMMINISTRATORE.md) | [standalone/README.md](standalone/README.md) |
 
+Nella versione standalone gli amministratori creano gli utenti dalla pagina web e i testi dei casi possono essere elaborati con l'AI (Claude) a partire da appunti; su SharePoint queste due funzioni non ci sono.
+
 La stessa interfaccia, le stesse schede PDF e lo stesso export Excel sono condivisi: i componenti React dipendono solo dai contratti in `src/services/contracts.ts`, implementati da `SharePointBackend` e da `standalone/web/HttpBackend.ts`.
 
 ## Struttura

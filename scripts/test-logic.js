@@ -24,7 +24,7 @@ const long = (n) => Array(n).fill('Lorem ipsum dolor sit amet consectetur.').joi
 
 function base(extra) {
   return Object.assign({
-    id: 42, cliente: 'Acme Industries S.p.A.', settore: 'Manifatturiero', fatturato: 5000000, localizzazione: 'Milano',
+    id: 42, cliente: 'Acme Industries S.p.A.', settore: 'Manifatturiero', fatturato: '10-50M', salesRiferimento: 'Giulia Bianchi', compilazioneAI: false, appuntiAI: '', localizzazione: 'Milano',
     nomeProgetto: 'Migrazione ERP', anno: 2025, spesa: 120000, sintesi: 'Sintesi breve.', esigenza: 'Esigenza di Acme Industries.',
     soluzioneProposta: 'Proposta', soluzioneImplementata: 'Implementata', vendor: ['SAP', 'Microsoft'], tecnologie: ['S/4HANA'],
     servizi: ['Assessment', 'Migrazione', 'Formazione'], benefici: 'Meno costi', kpi: '-30% tempi', stato: 'Completo',
@@ -77,7 +77,8 @@ async function render(uc, texts, opts) {
   assert.ok(JSON.stringify(r.def.content).indexOf('Fatturato cliente') < 0);
   r = await render(base({ clienteCitabile: true }), null, { includeFatturato: true, includeSpesa: true });
   const s = JSON.stringify(r.def.content);
-  assert.ok(s.indexOf('Fatturato cliente') >= 0 && s.indexOf('Spesa progetto') >= 0);
+  assert.ok(s.indexOf('Fatturato cliente') >= 0 && s.indexOf('Da 10 a 50 M€') >= 0 && s.indexOf('Spesa progetto') >= 0);
+  assert.ok(s.indexOf('Giulia Bianchi') < 0, 'il sales di riferimento non compare nella scheda PDF');
 
   // 4. Overflow: testi lunghi => più pagine e sezioni segnalate, senza tagliare il testo
   uc = base({ clienteCitabile: true, esigenza: long(40), soluzioneProposta: long(40), soluzioneImplementata: long(40), benefici: long(30) });
@@ -106,14 +107,22 @@ async function render(uc, texts, opts) {
   assert.strictEqual(ws.views[0].ySplit, 1);
   assert.strictEqual(ws.views[0].showGridLines, true);
   assert.strictEqual(ws.getRow(1).getCell(1).fill.fgColor.argb, 'FF0073C7');
-  assert.strictEqual(ws.getCell('B2').value, '=SUM(A1:A2)');
-  assert.strictEqual(typeof ws.getCell('B2').value, 'string');
-  assert.strictEqual(ws.getCell('N2').alignment.wrapText, true);
-  assert.strictEqual(ws.getCell('Q2').value, 'A; B');
-  assert.strictEqual(ws.getCell('H2').numFmt, '#,##0.00 "€"');
-  assert.strictEqual(ws.getCell('B2').numFmt, '@');
-  assert.ok(ws.getCell('X2').value instanceof Date);
-  assert.strictEqual(ws.getCell('C2').value, 'No');
-  assert.strictEqual(ws.getCell('B2').value, '=SUM(A1:A2)');
+  const col = (name) => {
+    const idx = ws.getRow(1).values.indexOf(name);
+    assert.ok(idx > 0, 'colonna mancante: ' + name);
+    return idx;
+  };
+  const cell = (name) => ws.getRow(2).getCell(col(name));
+  assert.strictEqual(cell('Cliente / Ragione sociale').value, '=SUM(A1:A2)');
+  assert.strictEqual(typeof cell('Cliente / Ragione sociale').value, 'string');
+  assert.strictEqual(cell('Necessità / Esigenza del cliente').alignment.wrapText, true);
+  assert.strictEqual(cell('Vendor').value, 'A; B');
+  assert.strictEqual(cell('Spesa complessiva progetto (€)').numFmt, '#,##0.00 "€"');
+  assert.strictEqual(cell('Cliente / Ragione sociale').numFmt, '@');
+  assert.ok(cell('Data di creazione').value instanceof Date);
+  assert.strictEqual(cell('Cliente citabile nella scheda').value, 'No');
+  assert.strictEqual(cell('Fatturato cliente (scaglione)').value, 'Da 10 a 50 M€');
+  assert.strictEqual(cell('Sales di riferimento').value, 'Giulia Bianchi');
+  assert.strictEqual(cell('Testi elaborati con AI').value, 'No');
   console.log('OK: tutti i test di logica superati (pagine overflow: ' + r.tracker.pageCount + ', sezioni: ' + over.join(', ') + ')');
 })().catch((e) => { console.error('FALLITO:', e); process.exit(1); });

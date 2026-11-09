@@ -1,4 +1,4 @@
-import { IUseCase } from '../models/UseCase';
+import { IUseCase, fatturatoLabel } from '../models/UseCase';
 import { defaultAnonymousName } from '../utils/validation';
 import { formatDate, formatEuro, normalize, slug } from '../utils/format';
 
@@ -222,8 +222,8 @@ export function buildDocDefinition(input: IPdfInput, tracker: ITracker): any {
   facts.push(kv('Settore', uc.settore));
   facts.push(kv('Localizzazione', uc.localizzazione));
   facts.push(kv('Anno', uc.anno ? String(uc.anno) : ''));
-  if (input.options.includeFatturato && uc.fatturato !== null) {
-    facts.push(kv('Fatturato cliente', formatEuro(uc.fatturato)));
+  if (input.options.includeFatturato && uc.fatturato) {
+    facts.push(kv('Fatturato cliente', fatturatoLabel(uc.fatturato)));
   }
   if (input.options.includeSpesa && uc.spesa !== null) {
     facts.push(kv('Spesa progetto', formatEuro(uc.spesa)));

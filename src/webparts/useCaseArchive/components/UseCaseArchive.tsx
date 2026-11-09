@@ -223,8 +223,8 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
           {loadError.message}
           {loadError.status === 404 && backend.provisioning && (
             <div style={{ marginTop: 6 }}>
-              La lista "{settings.listTitle}" o la libreria "{settings.assetsLibraryTitle}" non esistono ancora in questo sito. Se hai il permesso
-              "Gestisci liste" puoi crearle dalle Impostazioni; in alternativa usa lo script di provisioning fornito.
+              La lista "{settings.listTitle}", la libreria "{settings.assetsLibraryTitle}" o alcune colonne mancano in questo sito. Se hai il permesso
+              "Gestisci liste" puoi crearle o aggiornarle dalle Impostazioni; in alternativa usa lo script di provisioning fornito.
             </div>
           )}
         </MessageBar>
@@ -243,6 +243,8 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
         sectors={settings.sectors}
         allItems={items}
         assets={assets}
+        ai={backend.ai}
+        aiUnavailableReason={backend.aiUnavailableReason}
         permissions={permissions}
         onSave={saveCase}
         onClose={function () { setView({ kind: 'list' }); }}
@@ -272,7 +274,7 @@ const UseCaseArchive: React.FC<IUseCaseArchiveProps> = function (props) {
   }
 
   return (
-    <ThemeProvider theme={brandTheme} className={styles.app}>
+    <ThemeProvider theme={brandTheme} className={styles.app} style={{ background: 'transparent' }}>
       <Notifications items={notes} onDismiss={dismiss} />
       {header}
       {body}

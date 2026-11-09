@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { DefaultButton, Dialog, DialogFooter, DialogType, PrimaryButton, TextField, MessageBar, MessageBarType } from '@fluentui/react';
 import { HttpClient, IMe } from './HttpBackend';
+import { UsersPanel } from './UsersPanel';
 
 const ROLE_LABEL: { [r: string]: string } = { admin: 'Amministratore', editor: 'Editor', reader: 'Sola lettura' };
 
 export const AccountMenu: React.FC<{ http: HttpClient; me: IMe; onLogout: () => void }> = function (props) {
   const [open, setOpen] = React.useState(false);
+  const [showUsers, setShowUsers] = React.useState(false);
   const [current, setCurrent] = React.useState('');
   const [next, setNext] = React.useState('');
   const [busy, setBusy] = React.useState(false);
@@ -36,8 +38,10 @@ export const AccountMenu: React.FC<{ http: HttpClient; me: IMe; onLogout: () => 
 
   return (
     <>
+      {props.me.role === 'admin' && <DefaultButton iconProps={{ iconName: 'People' }} text="Utenti" onClick={function () { setShowUsers(true); }} />}
       <DefaultButton iconProps={{ iconName: 'Contact' }} text={props.me.displayName + ' (' + ROLE_LABEL[props.me.role] + ')'} onClick={function () { setOpen(true); }} />
       <DefaultButton iconProps={{ iconName: 'SignOut' }} text="Esci" onClick={logout} />
+      {showUsers && <UsersPanel http={props.http} me={props.me} onDismiss={function () { setShowUsers(false); }} />}
       {open && (
         <Dialog hidden={false} onDismiss={function () { setOpen(false); setMsg(null); }}
           dialogContentProps={{ type: DialogType.normal, title: 'Cambia password' }}>
